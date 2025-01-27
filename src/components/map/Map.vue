@@ -25,86 +25,68 @@
   const mapContainer = ref(null);
   const map = ref(null);
 
-  const updateSources = ()=>{
 
-    const layer1 = map.value.removeLayer('bridges');
-    const layer2 = map.value.removeLayer('centers');
-    const layer3 = map.value.removeLayer('polygons');
+  const handleEvent = (eventName, payload) => {
 
-    const source1 = map.value.removeSource('bridges');
-    const source2 = map.value.removeSource('centers');
-    const source3 = map.value.removeSource('polygons');
-    
-    
+    console.log(eventName,payload.arg1);
 
-    createSources();
+    if (map.value.getLayer("bridges")) {
+      map.value.removeLayer("bridges");
+    }
 
-  }
+    if (map.value.getSource("bridges")) {
+      map.value.removeSource("bridges");
+    }
 
-  const createSources = ()=>{
+    if (map.value.getLayer("clusters")) {
+      map.value.removeLayer("clusters");
+    }
 
-    map.value.addSource('bridges', {
+    if (map.value.getSource("clusters")) {
+      map.value.removeSource("clusters");
+    }
+
+    map.value.addSource("bridges", {
     type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
-    data: `https://decker-public-hosting.s3.us-east-2.amazonaws.com/bridges.geojson?${Date.now()}`,
-    //dynamic: true
-  });
+    data: payload.arg1.bridges
 
-  map.value.addSource('centers', {
-    type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
-    data: `https://decker-public-hosting.s3.us-east-2.amazonaws.com/centers.geojson?${Date.now()}`,
-    //dynamic: true
-  });
-
-  map.value.addSource('polygons', {
-    type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
-    data: `https://decker-public-hosting.s3.us-east-2.amazonaws.com/polygons.geojson?${Date.now()}`,
-    //dynamic: true
-  });
-
-  map.value.addLayer({
-            id: 'homepoint',
-            type: 'circle',
-            source: 'homepoint',
-            paint: {
-                'circle-color': '#FFD700',
-                'circle-radius': 8
-            }
         });
 
     map.value.addLayer({
-            id: 'bridges',
+            id: "bridges",
             type: 'circle',
-            source: 'bridges',
+            source: "bridges",
+            paint: {
+                'circle-color': '#EE4B2B',
+                'circle-radius': 16
+            }
+      });
+
+
+
+      map.value.addSource("clusters", {
+    type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
+    data: payload.arg1.clusters
+
+        });
+
+    map.value.addLayer({
+            id: "clusters",
+            type: 'circle',
+            source: "clusters",
             paint: {
                 'circle-color': '#51bbd6',
-                'circle-radius': 5
+                'circle-radius': 9
             }
-        });
+      });
 
-    map.value.addLayer({
-        id: 'centers',
-        type: 'circle',
-        source: 'centers',
-        paint: {
-            'circle-color': '#FF4B33',
-            'circle-radius': 5
-        }
-    });
-
-    map.value.addLayer({
-        id: 'polygons',
-        type: 'fill',
-        source: 'polygons',
-        paint: {
-            'fill-color': '#f08',
-            'fill-opacity': 0.4
-        }
-    });
-
-
+      
 
   }
-  
+
+  const updateSources = ()=>{
+  }
+
   onMounted(() => {
     mapboxgl.accessToken = 'pk.eyJ1IjoiY21lcnJpZ2FuIiwiYSI6ImNtNjlrNHJoNjBneDkybG4zaW5mZnE1OHoifQ.6K-waLtuExh_XFxgOD-E1w'; // Replace with your actual token
   
@@ -140,21 +122,27 @@
 
   });
 
-    createSources();
+    //createSources();
 
 });
 
   sbAPP.value = createSuperblocksEmbed({
         src: "https://app.superblocks.com/embed/applications/7246b0b7-e120-4d22-949a-71cca2a7ecba",
         colorScheme: "dark",
-        id: "sb-embed"
+        id: "sb-embed",
+        onEvent: handleEvent
         // No properties defined. Use the Embed panel to add properties and uncomment this block.
         // properties: { EmbedProp1: "Hello World" }
     });
     
   superblocksWrapper.value.appendChild(sbAPP.value);
 
-  
+  console.log(sbAPP.value instanceof HTMLElement)
+
+
+  //sbAPP.value.addEventListener('buttonClicked', (event) => {console.log('Event1 EMITTED!');})
+
+  //sbAPP.value.onEvent()
 
 
   });
