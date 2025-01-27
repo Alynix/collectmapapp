@@ -6,13 +6,22 @@
       
       </div>
       <div ref="mapContainer" class="map-container"></div>
+
+      <div ref="superblocksWrapper" class="sb-container"></div>
+
     </div>
 </template>
   
 <script setup>
   import { onMounted, ref } from 'vue';
   import mapboxgl from 'mapbox-gl';
+
+  import { createSuperblocksEmbed } from '@superblocksteam/embed'
   
+  const superblocksWrapper = ref(null)
+
+  const sbAPP = ref(null)
+
   const mapContainer = ref(null);
   const map = ref(null);
 
@@ -135,9 +144,22 @@
 
 });
 
-   
+  sbAPP.value = createSuperblocksEmbed({
+        src: "https://app.superblocks.com/embed/applications/7246b0b7-e120-4d22-949a-71cca2a7ecba",
+        colorScheme: "dark",
+        id: "sb-embed"
+        // No properties defined. Use the Embed panel to add properties and uncomment this block.
+        // properties: { EmbedProp1: "Hello World" }
+    });
+    
+  superblocksWrapper.value.appendChild(sbAPP.value);
+
+  
+
 
   });
+
+  
 
 </script>
   
@@ -152,11 +174,21 @@
     height: 100vh;
 }
 
+.sb-container {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  width: 35%;
+  height: 95%;
+  background: #000;
+  color: #FFF;
+}
+
 .dialogue {
   position: absolute;
-  top: 75px;
-  left: 75px;
-  width: 500px;
+  top: 10px;
+  left: 10px;
+  width: 300px;
   background: #000;
   color: #FFF;
 }
