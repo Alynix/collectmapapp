@@ -16,8 +16,15 @@
       <div ref="superblocksWrapper" class="sb-container" v-show="isVisible"></div>
 
       <div class="dialogue">
+
+        <p> NBI Bridge Clustering Tool</p>
         
-        <p>Bridge clustering map... <button @click="isVisible = !isVisible"> Hide </button></p>
+        <p> 
+          <button @click="isVisible = !isVisible"> Bridge Selection Tool </button>
+          <button @click="clearBridges()"> Clear Bridges </button>
+        </p>
+
+        
       
       
       
@@ -76,7 +83,7 @@
 
             // Restrict the area to 2 decimal points.
             const rounded_area = Math.round(area * 100) / 100;
-            answer.innerHTML = `<p><strong>${rounded_area}</strong></p><p>km squared</p>`;
+            answer.innerHTML = `<p><strong>${rounded_area} km^2</strong>`;
         } else {
             answer.innerHTML = '';
             if (e.type !== 'draw.delete')
@@ -89,29 +96,7 @@
 
     console.log(eventName,payload.arg1);
 
-    if (map.value.getLayer("bridges")) {
-      map.value.removeLayer("bridges");
-    }
-
-    if (map.value.getSource("bridges")) {
-      map.value.removeSource("bridges");
-    }
-
-    if (map.value.getLayer("clusters")) {
-      map.value.removeLayer("clusters");
-    }
-
-    if (map.value.getSource("clusters")) {
-      map.value.removeSource("clusters");
-    }
-
-    if (map.value.getLayer("polygons")) {
-      map.value.removeLayer("polygons");
-    }
-
-    if (map.value.getSource("polygons")) {
-      map.value.removeSource("polygons");
-    }
+    clearBridges()
 
     map.value.addSource("bridges", {
     type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
@@ -167,7 +152,32 @@
 
   }
 
-  const updateSources = ()=>{
+  const clearBridges = ()=>{
+
+    if (map.value.getLayer("bridges")) {
+      map.value.removeLayer("bridges");
+    }
+
+    if (map.value.getSource("bridges")) {
+      map.value.removeSource("bridges");
+    }
+
+    if (map.value.getLayer("clusters")) {
+      map.value.removeLayer("clusters");
+    }
+
+    if (map.value.getSource("clusters")) {
+      map.value.removeSource("clusters");
+    }
+
+    if (map.value.getLayer("polygons")) {
+      map.value.removeLayer("polygons");
+    }
+
+    if (map.value.getSource("polygons")) {
+      map.value.removeSource("polygons");
+    }
+
   }
 
   onMounted(() => {
@@ -279,9 +289,9 @@
   position: absolute;
   top: 6px;
   left: 0px;
-  width: 50%;
+  width: 100%;
   height: 70px;
-  background: #000;
+  background: #624cdb;
   color: #FFF;
 }
 
@@ -295,8 +305,8 @@
 }
 
 .calculation-box {
-        height: 60px;
-        width: 160px;
+        height: 80px;
+        width: 270px;
         position: absolute;
         bottom: 40px;
         left: 10px;
@@ -308,7 +318,13 @@
 p {
         font-family: 'Open Sans';
         margin: 0;
-        font-size: 12px;
+        font-size: 24px;
+}
+
+button {
+        font-family: 'Open Sans';
+        margin: 0;
+        font-size: 18px;
 }
 
 </style>
