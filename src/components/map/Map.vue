@@ -2,12 +2,12 @@
     <div class="map-wrapper">
       <div class="dialogue"> Bridge clustering map... 
       
-      <button @click="updateSources()"> Refresh </button>
+      <button @click="isVisible = !isVisible"> Hide </button>
       
       </div>
       <div ref="mapContainer" class="map-container"></div>
 
-      <div ref="superblocksWrapper" class="sb-container"></div>
+      <div ref="superblocksWrapper" class="sb-container" v-show="isVisible"></div>
 
     </div>
 </template>
@@ -24,6 +24,8 @@
 
   const mapContainer = ref(null);
   const map = ref(null);
+
+  const isVisible = ref(true)
 
 
   const handleEvent = (eventName, payload) => {
@@ -57,8 +59,8 @@
             type: 'circle',
             source: "bridges",
             paint: {
-                'circle-color': '#EE4B2B',
-                'circle-radius': 16
+                'circle-color': '#000000',
+                'circle-radius': 6
             }
       });
 
@@ -75,8 +77,8 @@
             type: 'circle',
             source: "clusters",
             paint: {
-                'circle-color': '#51bbd6',
-                'circle-radius': 9
+                'circle-color': '#FF0000',
+                'circle-radius': 6
             }
       });
 
@@ -164,10 +166,10 @@
 
 .sb-container {
   position: absolute;
-  bottom: 10px;
-  left: 10px;
-  width: 35%;
-  height: 95%;
+  top: 35px;
+  left: 15px;
+  width: 98%;
+  height: 80%;
   background: #000;
   color: #FFF;
 }
