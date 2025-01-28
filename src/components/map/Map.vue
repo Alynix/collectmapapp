@@ -48,6 +48,14 @@
       map.value.removeSource("clusters");
     }
 
+    if (map.value.getLayer("polygons")) {
+      map.value.removeLayer("polygons");
+    }
+
+    if (map.value.getSource("polygons")) {
+      map.value.removeSource("polygons");
+    }
+
     map.value.addSource("bridges", {
     type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
     data: payload.arg1.bridges
@@ -79,6 +87,22 @@
             paint: {
                 'circle-color': '#FF0000',
                 'circle-radius': 6
+            }
+      });
+
+      map.value.addSource("polygons", {
+    type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
+    data: payload.arg1.polygons
+
+        });
+
+    map.value.addLayer({
+            id: "polygons",
+            type: 'fill',
+            source: 'polygons',
+            paint: {
+                'fill-color': '#f08',
+                'fill-opacity': 0.4
             }
       });
 
