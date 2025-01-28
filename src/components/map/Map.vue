@@ -22,6 +22,7 @@
         <p> 
           <button @click="isVisible = !isVisible"> Bridge Selection Tool </button>
           <button @click="clearBridges()"> Clear Bridges </button>
+          <button @click="resetView()"> Zoom to Region </button>
         </p>
 
         
@@ -69,6 +70,21 @@
 
   const bbox = ref([-94.769437,38.924986,-94.763933,38.927766])
 
+  // Function to zoom to coordinates
+  function zoomToCoordinates(lng, lat, zoomLevel=15) {
+    map.value.flyTo({
+      center: [lng, lat],
+      zoom: zoomLevel
+    });
+  }
+
+  const resetView = () => {
+
+    isVisible.value = false
+
+    map.value.fitBounds(bbox.value)
+  }
+
   function updateArea(e) {
         const data = draw.value.getAll();
         const answer = document.getElementById('calculated-area');
@@ -94,60 +110,72 @@
 
   const handleEvent = (eventName, payload) => {
 
-    console.log(eventName,payload.arg1);
+    if (eventName == "buttonClicked"){
 
-    clearBridges()
+      clearBridges()
 
-    map.value.addSource("bridges", {
-    type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
-    data: payload.arg1.bridges
+      map.value.addSource("bridges", {
+      type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
+      data: payload.arg1.bridges
 
+          });
+
+      map.value.addLayer({
+              id: "bridges",
+              type: 'circle',
+              source: "bridges",
+              paint: {
+                  'circle-color': '#000000',
+                  'circle-radius': 6
+              }
         });
 
-    map.value.addLayer({
-            id: "bridges",
-            type: 'circle',
-            source: "bridges",
-            paint: {
-                'circle-color': '#000000',
-                'circle-radius': 6
-            }
-      });
+        map.value.addSource("clusters", {
+      type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
+      data: payload.arg1.clusters
 
+          });
 
-
-      map.value.addSource("clusters", {
-    type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
-    data: payload.arg1.clusters
-
+      map.value.addLayer({
+              id: "clusters",
+              type: 'circle',
+              source: "clusters",
+              paint: {
+                  'circle-color': '#FF0000',
+                  'circle-radius': 6
+              }
         });
 
-    map.value.addLayer({
-            id: "clusters",
-            type: 'circle',
-            source: "clusters",
-            paint: {
-                'circle-color': '#FF0000',
-                'circle-radius': 6
-            }
-      });
+        map.value.addSource("polygons", {
+      type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
+      data: payload.arg1.polygons
 
-      map.value.addSource("polygons", {
-    type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
-    data: payload.arg1.polygons
+          });
 
+      map.value.addLayer({
+              id: "polygons",
+              type: 'fill',
+              source: 'polygons',
+              paint: {
+                  'fill-color': '#f08',
+                  'fill-opacity': 0.4
+              }
         });
 
-    map.value.addLayer({
-            id: "polygons",
-            type: 'fill',
-            source: 'polygons',
-            paint: {
-                'fill-color': '#f08',
-                'fill-opacity': 0.4
-            }
-      });
 
+    } else if (eventName == "rowClicked1"){
+
+      isVisible.value = false
+      zoomToCoordinates(payload.coords[0],payload.coords[1])
+
+    } else if (eventName == "zoomBridge"){
+
+      isVisible.value = false
+      zoomToCoordinates(payload.coords[0],payload.coords[1],18)
+
+      }
+
+    
       
 
   }
