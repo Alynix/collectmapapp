@@ -1,13 +1,32 @@
 <template>
     <div class="map-wrapper">
-      <div class="dialogue"> Bridge clustering map... 
+
       
-      <button @click="isVisible = !isVisible"> Hide </button>
-      
+
+      <div class="map-right-sidebar">
+        <div class="map-search" ref="search_container_el"></div>
+          <slot name="right-sidebar"></slot>
       </div>
-      <div ref="mapContainer" class="map-container"></div>
+
+      <div ref="map_el" class="map"></div>
+
+      
+      
 
       <div ref="superblocksWrapper" class="sb-container" v-show="isVisible"></div>
+
+      <div class="dialogue">
+        
+        <p>Bridge clustering map... <button @click="isVisible = !isVisible"> Hide </button></p>
+      
+      
+      
+      </div>
+
+      <div class="calculation-box">
+          <p>Click to draw a polygon.</p>
+      <div id="calculated-area"></div>
+</div>
 
     </div>
 </template>
@@ -15,17 +34,55 @@
 <script setup>
   import { onMounted, ref } from 'vue';
   import mapboxgl from 'mapbox-gl';
+  import { MapboxAddressAutofill, MapboxSearchBox, MapboxGeocoder, config } from '@mapbox/search-js-web'
 
-  import { createSuperblocksEmbed } from '@superblocksteam/embed'
+  mapboxgl.accessToken = 'pk.eyJ1IjoiY21lcnJpZ2FuIiwiYSI6ImNtNjlrNHJoNjBneDkybG4zaW5mZnE1OHoifQ.6K-waLtuExh_XFxgOD-E1w';
+
+  import { createSuperblocksEmbed } from '@superblocksteam/embed';
+
+  import MapboxDraw from "@mapbox/mapbox-gl-draw"; 
+  import 'mapbox-gl/dist/mapbox-gl.css';
+
+  import * as turf from "@turf/turf";
   
   const superblocksWrapper = ref(null)
 
   const sbAPP = ref(null)
 
-  const mapContainer = ref(null);
+  const map_el = ref(null);
   const map = ref(null);
 
-  const isVisible = ref(true)
+  const draw = ref(null);
+
+
+  const search_container_el = ref(null);
+
+
+  const isVisible = ref(false)
+
+  const bbox = ref([-94.769437,38.924986,-94.763933,38.927766])
+
+  function updateArea(e) {
+        const data = draw.value.getAll();
+        const answer = document.getElementById('calculated-area');
+        if (data.features.length > 0) {
+            const area = turf.area(data) / 1e6;
+
+            bbox.value = turf.bbox(data)
+
+            sbAPP.value.properties = { EmbedBBOX: bbox.value }
+
+            //sbAPP.value.trigger("newBBOX",{"bbox":[0,1,2,3]})
+
+            // Restrict the area to 2 decimal points.
+            const rounded_area = Math.round(area * 100) / 100;
+            answer.innerHTML = `<p><strong>${rounded_area}</strong></p><p>km squared</p>`;
+        } else {
+            answer.innerHTML = '';
+            if (e.type !== 'draw.delete')
+                alert('Click the map to draw a polygon.');
+        }
+    }
 
 
   const handleEvent = (eventName, payload) => {
@@ -114,14 +171,42 @@
   }
 
   onMounted(() => {
-    mapboxgl.accessToken = 'pk.eyJ1IjoiY21lcnJpZ2FuIiwiYSI6ImNtNjlrNHJoNjBneDkybG4zaW5mZnE1OHoifQ.6K-waLtuExh_XFxgOD-E1w'; // Replace with your actual token
+    
   
     map.value = new mapboxgl.Map({
-      container: mapContainer.value,
+      container: map_el.value,
       style: 'mapbox://styles/mapbox/satellite-streets-v12', // Use your desired Mapbox style
       center: [-94.765146, 38.926882], 
       zoom: 11.5
     });
+
+    const searchBoxElement = new MapboxSearchBox();
+    searchBoxElement.accessToken = mapboxgl.accessToken;
+
+    searchBoxElement.mapboxgl = mapboxgl
+
+    // bind the search box instance to the map instance
+    searchBoxElement.bindMap(map.value)
+    search_container_el.value.appendChild(searchBoxElement);
+
+
+    draw.value = new MapboxDraw({
+        displayControlsDefault: false,
+        // Select which mapbox-gl-draw control buttons to add to the map.
+        controls: {
+            polygon: true,
+            trash: true
+        },
+        // Set mapbox-gl-draw to draw by default.
+        // The user does not have to click the polygon control button first.
+        defaultMode: 'draw_polygon'
+    });
+    map.value.addControl(draw.value);
+
+    map.value.on('draw.create', updateArea);
+    map.value.on('draw.delete', updateArea);
+    map.value.on('draw.update', updateArea);
+
 
     map.value.on('load', () => {
 
@@ -156,20 +241,12 @@
         src: "https://app.superblocks.com/embed/applications/7246b0b7-e120-4d22-949a-71cca2a7ecba",
         colorScheme: "dark",
         id: "sb-embed",
-        onEvent: handleEvent
+        onEvent: handleEvent,
         // No properties defined. Use the Embed panel to add properties and uncomment this block.
-        // properties: { EmbedProp1: "Hello World" }
+        properties: { EmbedBBOX: bbox.value }
     });
     
   superblocksWrapper.value.appendChild(sbAPP.value);
-
-  console.log(sbAPP.value instanceof HTMLElement)
-
-
-  //sbAPP.value.addEventListener('buttonClicked', (event) => {console.log('Event1 EMITTED!');})
-
-  //sbAPP.value.onEvent()
-
 
   });
 
@@ -183,28 +260,55 @@
   position: relative;
 }
 
-.map-container {
+.map {
     display: flex;
     height: 100vh;
 }
 
 .sb-container {
   position: absolute;
-  top: 35px;
+  bottom: 12px;
   left: 15px;
   width: 98%;
-  height: 80%;
+  height: 90%;
   background: #000;
   color: #FFF;
 }
 
 .dialogue {
   position: absolute;
-  top: 10px;
-  left: 10px;
-  width: 300px;
+  top: 6px;
+  left: 0px;
+  width: 50%;
+  height: 70px;
   background: #000;
   color: #FFF;
+}
+
+.map-right-sidebar {
+  position: absolute;
+  top: 15px;
+  right: 50px;
+  width: 330px;
+  max-width: 500px;
+  z-index: 200;
+}
+
+.calculation-box {
+        height: 60px;
+        width: 160px;
+        position: absolute;
+        bottom: 40px;
+        left: 10px;
+        background-color: rgba(255, 255, 255, 0.9);
+        padding: 15px;
+        text-align: center;
+}
+
+p {
+        font-family: 'Open Sans';
+        margin: 0;
+        font-size: 12px;
 }
 
 </style>
