@@ -110,99 +110,101 @@
 
   const handleEvent = (eventName, payload) => {
 
-    if (eventName == "buttonClicked"){
+    switch(eventName){
 
-      clearBridges()
+      case "buttonClicked":
 
-      map.value.addSource("bridges", {
-      type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
-      data: payload.bridges
+        clearBridges()
 
+        map.value.addSource("bridges", {
+        type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
+        data: payload.bridges
+
+            });
+
+        map.value.addLayer({
+                id: "bridges",
+                type: 'circle',
+                source: "bridges",
+                paint: {
+                    'circle-color': '#000000',
+                    'circle-radius': 6
+                }
           });
 
-      map.value.addLayer({
-              id: "bridges",
-              type: 'circle',
-              source: "bridges",
-              paint: {
-                  'circle-color': '#000000',
-                  'circle-radius': 6
-              }
-        });
+          map.value.addSource("clusters", {
+        type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
+        data: payload.clusters
 
-        map.value.addSource("clusters", {
-      type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
-      data: payload.clusters
+            });
 
+        map.value.addLayer({
+                id: "clusters",
+                type: 'circle',
+                source: "clusters",
+                paint: {
+                    'circle-color': '#FF0000',
+                    'circle-radius': 6
+                }
           });
 
-      map.value.addLayer({
-              id: "clusters",
-              type: 'circle',
-              source: "clusters",
-              paint: {
-                  'circle-color': '#FF0000',
-                  'circle-radius': 6
-              }
-        });
+          map.value.addSource("polygons", {
+        type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
+        data: payload.polygons
 
-        map.value.addSource("polygons", {
-      type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
-      data: payload.polygons
+            });
 
+        map.value.addLayer({
+                id: "polygons",
+                type: 'fill',
+                source: 'polygons',
+                paint: {
+                    'fill-color': '#f08',
+                    'fill-opacity': 0.4
+                }
           });
 
-      map.value.addLayer({
-              id: "polygons",
-              type: 'fill',
-              source: 'polygons',
-              paint: {
-                  'fill-color': '#f08',
-                  'fill-opacity': 0.4
-              }
-        });
+        break;
+      case "clusterSplit":
 
+        if (map.value.getLayer("polygons2")) {
+          map.value.removeLayer("polygons2");
+        }
 
-    } else if (eventName == "clusterSplit"){
+        if (map.value.getSource("polygons2")) {
+          map.value.removeSource("polygons2");
+        }
 
-      if (map.value.getLayer("polygons2")) {
-        map.value.removeLayer("polygons2");
-      }
+        map.value.addSource("polygons2", {
+        type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
+        data: payload.polygons
 
-      if (map.value.getSource("polygons2")) {
-        map.value.removeSource("polygons2");
-      }
+            });
 
-      map.value.addSource("polygons2", {
-      type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
-      data: payload.polygons
-
+        map.value.addLayer({
+                id: "polygons2",
+                type: 'fill',
+                source: 'polygons2',
+                paint: {
+                    'fill-color': '#FFFF00',
+                    'fill-opacity': 0.6
+                }
           });
 
-      map.value.addLayer({
-              id: "polygons2",
-              type: 'fill',
-              source: 'polygons2',
-              paint: {
-                  'fill-color': '#FFFF00',
-                  'fill-opacity': 0.6
-              }
-        });
+        break;
+      case "rowClicked1":
+        isVisible.value = false
+        zoomToCoordinates(payload.coords[0],payload.coords[1])
+        break;
+      case "zoomBridge":
+        isVisible.value = false
+        zoomToCoordinates(payload.coords[0],payload.coords[1],18)
+        break;
+      default:
+        // default here 
 
-    } else if (eventName == "rowClicked1"){
 
-      isVisible.value = false
-      zoomToCoordinates(payload.coords[0],payload.coords[1])
-
-    } else if (eventName == "zoomBridge"){
-
-      isVisible.value = false
-      zoomToCoordinates(payload.coords[0],payload.coords[1],18)
-
-      }
-
-    
-      
+    }
 
   }
 
