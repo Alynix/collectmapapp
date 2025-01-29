@@ -116,7 +116,7 @@
 
       map.value.addSource("bridges", {
       type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
-      data: payload.arg1.bridges
+      data: payload.bridges
 
           });
 
@@ -132,7 +132,7 @@
 
         map.value.addSource("clusters", {
       type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
-      data: payload.arg1.clusters
+      data: payload.clusters
 
           });
 
@@ -148,7 +148,7 @@
 
         map.value.addSource("polygons", {
       type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
-      data: payload.arg1.polygons
+      data: payload.polygons
 
           });
 
@@ -162,6 +162,32 @@
               }
         });
 
+
+    } else if (eventName == "clusterSplit"){
+
+      if (map.value.getLayer("polygons2")) {
+        map.value.removeLayer("polygons2");
+      }
+
+      if (map.value.getSource("polygons2")) {
+        map.value.removeSource("polygons2");
+      }
+
+      map.value.addSource("polygons2", {
+      type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
+      data: payload.polygons
+
+          });
+
+      map.value.addLayer({
+              id: "polygons2",
+              type: 'fill',
+              source: 'polygons2',
+              paint: {
+                  'fill-color': '#FFFF00',
+                  'fill-opacity': 0.6
+              }
+        });
 
     } else if (eventName == "rowClicked1"){
 
@@ -204,6 +230,14 @@
 
     if (map.value.getSource("polygons")) {
       map.value.removeSource("polygons");
+    }
+
+    if (map.value.getLayer("polygons2")) {
+        map.value.removeLayer("polygons2");
+    }
+
+    if (map.value.getSource("polygons2")) {
+      map.value.removeSource("polygons2");
     }
 
   }
