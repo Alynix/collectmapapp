@@ -21,58 +21,172 @@
         
         <p> 
           <button @click="isVisible = !isVisible"> Bridge Selection Tool </button>
-          <button @click="clearBridges()"> Clear Bridges </button>
+          <button @click="clearAllLayers()"> Restart </button>
           <button @click="resetView()"> Zoom to Region </button>
+
+          
+          <button @click="mapStore.showDraw = !mapStore.showDraw"> <span v-show="!mapStore.showDraw">Show</span> <span v-show="mapStore.showDraw">Hide</span> Polygon </button>
+        
+          <button @click="mapStore.showBridges = !mapStore.showBridges"> <span v-show="!mapStore.showBridges">Show</span> <span v-show="mapStore.showBridges">Hide</span> Bridges </button>
+
+          <button @click="mapStore.showClusters = !mapStore.showClusters"> <span v-show="!mapStore.showClusters">Show</span> <span v-show="mapStore.showClusters">Hide</span> Clusters </button>
+        
         </p>
 
-        
-      
-      
-      
       </div>
 
       <div class="calculation-box">
           <p>Click to draw a polygon.</p>
-      <div id="calculated-area"></div>
-</div>
-
+          <div id="calculated-area">
+            {{ mapStore.calcArea }}
+          </div>
+      </div>
     </div>
 </template>
   
 <script setup>
-  import { onMounted, ref } from 'vue';
+  import { onMounted, onUnmounted, ref, watch } from 'vue';
   import mapboxgl from 'mapbox-gl';
   import { MapboxAddressAutofill, MapboxSearchBox, MapboxGeocoder, config } from '@mapbox/search-js-web'
+
+  
+  import MapboxDraw from "@mapbox/mapbox-gl-draw";  
 
   mapboxgl.accessToken = 'pk.eyJ1IjoiY21lcnJpZ2FuIiwiYSI6ImNtNjlrNHJoNjBneDkybG4zaW5mZnE1OHoifQ.6K-waLtuExh_XFxgOD-E1w';
 
   import { createSuperblocksEmbed } from '@superblocksteam/embed';
 
-  import MapboxDraw from "@mapbox/mapbox-gl-draw"; 
+  
   import 'mapbox-gl/dist/mapbox-gl.css';
 
   import * as turf from "@turf/turf";
+
+  import { useMapStore } from "@/stores/mapstore"
   
   const superblocksWrapper = ref(null)
-
   const sbAPP = ref(null)
 
+
+
   const map_el = ref(null);
-  const map = ref(null);
+  const map_instance = ref(null);
 
-  const draw = ref(null);
+  const mapStore = useMapStore();
 
+
+  const draw_instance = ref(null);
 
   const search_container_el = ref(null);
-
 
   const isVisible = ref(false)
 
   const bbox = ref([-94.769437,38.924986,-94.763933,38.927766])
 
+  
+
+  onMounted(() => {
+    
+    map_instance.value = new mapboxgl.Map({
+      container: map_el.value,
+      style: 'mapbox://styles/mapbox/satellite-streets-v12', // Use your desired Mapbox style
+      center: mapStore.mapCenter, 
+      zoom: mapStore.mapZoom,
+    });
+
+    const searchBoxElement = new MapboxSearchBox();
+    searchBoxElement.accessToken = mapboxgl.accessToken;
+
+    searchBoxElement.mapboxgl = mapboxgl
+
+    // bind the search box instance to the map instance
+    searchBoxElement.bindMap(map_instance.value)
+    search_container_el.value.appendChild(searchBoxElement);
+
+
+    draw_instance.value = new MapboxDraw({
+          displayControlsDefault: false,
+          // Select which mapbox-gl-draw control buttons to add to the map_instance.
+          controls: {
+              polygon: true,
+              trash: true
+          },
+          // Set mapbox-gl-draw to draw by default.
+          // The user does not have to click the polygon control button first.
+          defaultMode: 'draw_polygon'
+    });
+    map_instance.value.addControl(draw_instance.value);
+
+    mapStore.mapbox_instance = map_instance;
+    mapStore.mapboxdraw_instance = draw_instance;
+
+    // ON LOAD
+    mapStore.mapbox_instance.on("load",() => {
+      mapStore.map_mounted = true;
+
+
+      map_instance.value.on('draw.create', updateArea);
+      map_instance.value.on('draw.delete', updateArea);
+      map_instance.value.on('draw.update', updateArea);
+
+    })
+   
+
+    // register move and zoom events to persist map viewport
+    map_instance.value.on('move', (e) => {
+      storeViewport(map_instance.value.getCenter(), map_instance.value.getZoom())
+    })
+
+    
+
+  sbAPP.value = createSuperblocksEmbed({
+        src: "https://app.superblocks.com/embed/applications/7246b0b7-e120-4d22-949a-71cca2a7ecba",
+        colorScheme: "dark",
+        id: "sb-embed",
+        onEvent: handleEvent,
+        // No properties defined. Use the Embed panel to add properties and uncomment this block.
+        properties: { EmbedBBOX: bbox.value }
+    });
+    
+  superblocksWrapper.value.appendChild(sbAPP.value);
+
+  });
+
+  watch(bbox,(newValue,oldValue)=>{
+    console.log('Old',oldValue)
+    console.log('New',newValue)
+    sbAPP.value.properties = {EmbedBBOX:newValue}
+  })
+
+  onUnmounted(() => {
+    mapStore.map_mounted = false;
+
+  });
+
+  function updateArea(e) {
+        const data = draw_instance.value.getAll();
+        
+        if (data.features.length > 0) {
+            const area = turf.area(data) / 1e6;
+
+            bbox.value = turf.bbox(data)
+
+            // Restrict the area to 2 decimal points.
+            mapStore.calcArea = Math.round(area * 100) / 100;
+            
+        } else {
+
+          mapStore.calcArea = 0;
+        }
+  }
+
+  function storeViewport(center, zoom) {
+    mapStore.mapCenter = center;
+    mapStore.mapZoom = zoom;
+  }
+
   // Function to zoom to coordinates
   function zoomToCoordinates(lng, lat, zoomLevel=15) {
-    map.value.flyTo({
+    map_instance.value.flyTo({
       center: [lng, lat],
       zoom: zoomLevel
     });
@@ -82,31 +196,8 @@
 
     isVisible.value = false
 
-    map.value.fitBounds(bbox.value)
+    map_instance.value.fitBounds(bbox.value)
   }
-
-  function updateArea(e) {
-        const data = draw.value.getAll();
-        const answer = document.getElementById('calculated-area');
-        if (data.features.length > 0) {
-            const area = turf.area(data) / 1e6;
-
-            bbox.value = turf.bbox(data)
-
-            sbAPP.value.properties = { EmbedBBOX: bbox.value }
-
-            //sbAPP.value.trigger("newBBOX",{"bbox":[0,1,2,3]})
-
-            // Restrict the area to 2 decimal points.
-            const rounded_area = Math.round(area * 100) / 100;
-            answer.innerHTML = `<p><strong>${rounded_area} km^2</strong>`;
-        } else {
-            answer.innerHTML = '';
-            if (e.type !== 'draw.delete')
-                alert('Click the map to draw a polygon.');
-        }
-    }
-
 
   const handleEvent = (eventName, payload) => {
 
@@ -114,15 +205,15 @@
 
       case "buttonClicked":
 
-        clearBridges()
+        clearAllLayers()
 
-        map.value.addSource("bridges", {
+        map_instance.value.addSource("bridges", {
         type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
         data: payload.bridges
 
             });
 
-        map.value.addLayer({
+        map_instance.value.addLayer({
                 id: "bridges",
                 type: 'circle',
                 source: "bridges",
@@ -132,13 +223,13 @@
                 }
           });
 
-          map.value.addSource("clusters", {
+          map_instance.value.addSource("clusters", {
         type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
         data: payload.clusters
 
             });
 
-        map.value.addLayer({
+        map_instance.value.addLayer({
                 id: "clusters",
                 type: 'circle',
                 source: "clusters",
@@ -148,13 +239,13 @@
                 }
           });
 
-          map.value.addSource("polygons", {
+          map_instance.value.addSource("polygons", {
         type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
         data: payload.polygons
 
             });
 
-        map.value.addLayer({
+        map_instance.value.addLayer({
                 id: "polygons",
                 type: 'fill',
                 source: 'polygons',
@@ -167,21 +258,21 @@
         break;
       case "clusterSplit":
 
-        if (map.value.getLayer("polygons2")) {
-          map.value.removeLayer("polygons2");
+        if (map_instance.value.getLayer("polygons2")) {
+          map_instance.value.removeLayer("polygons2");
         }
 
-        if (map.value.getSource("polygons2")) {
-          map.value.removeSource("polygons2");
+        if (map_instance.value.getSource("polygons2")) {
+          map_instance.value.removeSource("polygons2");
         }
 
-        map.value.addSource("polygons2", {
+        map_instance.value.addSource("polygons2", {
         type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
         data: payload.polygons
 
             });
 
-        map.value.addLayer({
+        map_instance.value.addLayer({
                 id: "polygons2",
                 type: 'fill',
                 source: 'polygons2',
@@ -208,122 +299,24 @@
 
   }
 
-  const clearBridges = ()=>{
-
-    if (map.value.getLayer("bridges")) {
-      map.value.removeLayer("bridges");
+  const clearLayer = (tag) => {
+    if (map_instance.value.getLayer(tag)) {
+      map_instance.value.removeLayer(tag);
     }
 
-    if (map.value.getSource("bridges")) {
-      map.value.removeSource("bridges");
+    if (map_instance.value.getSource(tag)) {
+      map_instance.value.removeSource(tag);
     }
-
-    if (map.value.getLayer("clusters")) {
-      map.value.removeLayer("clusters");
-    }
-
-    if (map.value.getSource("clusters")) {
-      map.value.removeSource("clusters");
-    }
-
-    if (map.value.getLayer("polygons")) {
-      map.value.removeLayer("polygons");
-    }
-
-    if (map.value.getSource("polygons")) {
-      map.value.removeSource("polygons");
-    }
-
-    if (map.value.getLayer("polygons2")) {
-        map.value.removeLayer("polygons2");
-    }
-
-    if (map.value.getSource("polygons2")) {
-      map.value.removeSource("polygons2");
-    }
-
   }
 
-  onMounted(() => {
-    
-  
-    map.value = new mapboxgl.Map({
-      container: map_el.value,
-      style: 'mapbox://styles/mapbox/satellite-streets-v12', // Use your desired Mapbox style
-      center: [-94.765146, 38.926882], 
-      zoom: 11.5
-    });
+  const clearAllLayers = () => {
+    const layers = ["bridges","clusters","polygons"];
 
-    const searchBoxElement = new MapboxSearchBox();
-    searchBoxElement.accessToken = mapboxgl.accessToken;
-
-    searchBoxElement.mapboxgl = mapboxgl
-
-    // bind the search box instance to the map instance
-    searchBoxElement.bindMap(map.value)
-    search_container_el.value.appendChild(searchBoxElement);
-
-
-    draw.value = new MapboxDraw({
-        displayControlsDefault: false,
-        // Select which mapbox-gl-draw control buttons to add to the map.
-        controls: {
-            polygon: true,
-            trash: true
-        },
-        // Set mapbox-gl-draw to draw by default.
-        // The user does not have to click the polygon control button first.
-        defaultMode: 'draw_polygon'
-    });
-    map.value.addControl(draw.value);
-
-    map.value.on('draw.create', updateArea);
-    map.value.on('draw.delete', updateArea);
-    map.value.on('draw.update', updateArea);
-
-
-    map.value.on('load', () => {
-
-      map.value.addSource('homepoint', {
-    type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
-    data: {
-
-                            "type": "Feature",
-
-                            "properties": {
-
-                              "name": "Alynix"
-
-                            },
-
-                            "geometry": {
-
-                              "type": "Point",
-
-                              "coordinates": [-94.765146, 38.926882]
-                            }
-
-          } 
-
-  });
-
-    //createSources();
-
-});
-
-  sbAPP.value = createSuperblocksEmbed({
-        src: "https://app.superblocks.com/embed/applications/7246b0b7-e120-4d22-949a-71cca2a7ecba",
-        colorScheme: "dark",
-        id: "sb-embed",
-        onEvent: handleEvent,
-        // No properties defined. Use the Embed panel to add properties and uncomment this block.
-        properties: { EmbedBBOX: bbox.value }
-    });
-    
-  superblocksWrapper.value.appendChild(sbAPP.value);
-
-  });
-
+    for(let layer of layers){
+      console.log(layer)
+      clearLayer(layer);
+    }
+  }
   
 
 </script>
