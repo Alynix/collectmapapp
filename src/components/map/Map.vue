@@ -138,7 +138,6 @@
       map_instance.value.on('draw.update', updateArea);
 
       map_instance.value.on('click', 'counties', (e) => {
-            console.log(e.features[0])
             
             draw_instance.value.deleteAll()
 
@@ -147,10 +146,16 @@
             mapStore.showCounties = false
 
             updateArea()
+
+            const county = e.features[0].properties.coty_name.replace("]","").replace("[","").slice(1,-1)
+
+            const state = e.features[0].properties.ste_name.replace("]","").replace("[","").slice(1,-1)
+
+            const msg = `<h2>${county} county, ${state}<h2>`
             
             new mapboxgl.Popup()
                 .setLngLat(e.lngLat)
-                .setHTML(e.features[0].properties.coty_name+e.features[0].properties.ste_name)
+                .setHTML(msg)
                 .addTo(map_instance.value);
         });
 
@@ -166,12 +171,12 @@
 
       const bridges = properties.bridges.replace('[','').replace(']','').split(',')
 
-      let msg = `<h2>Group ${id}</h2><p>${size} Bridges<p>`
+      let msg = `<h2>Group ${id}</h2><p>${size} Bridges<p><ul>`
 
       for(let bridge of bridges){
-        console.log(bridge)
-        msg += `<p>${bridge}</p>`
+        msg += `<li>${bridge.slice(1,-1)}</li>`
       }
+      msg += `</ul>`
 
       new mapboxgl.Popup()
                 .setLngLat(e.lngLat)
