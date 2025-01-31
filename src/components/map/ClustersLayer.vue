@@ -9,14 +9,17 @@ onMounted(() => {
 
     if (map_instance.getSource("polygons")){
         map_instance.addLayer({
-            id: "polygons",
+                id: "polygons",
                 type: 'fill',
                 source: 'polygons',
                 paint: {
-                    'fill-color': '#f08',
+                    'fill-color': {
+                        type: 'identity',
+                        property: 'color',
+                    },
                     'fill-opacity': 0.4
                 }
-        });
+          });
     }
 
     if (map_instance.getSource("clusters")){
@@ -25,10 +28,15 @@ onMounted(() => {
                 type: 'circle',
                 source: "clusters",
                 paint: {
-                    'circle-color': '#FF0000',
-                    'circle-radius': 6
+                    'circle-color': {
+                        type: 'identity',
+                        property: 'color',
+                    },
+                    'circle-radius': 8,
+                    'circle-stroke-color':"#FFFFFF",
+                    'circle-stroke-width':1
                 }
-        });
+          });
     }
 
 })

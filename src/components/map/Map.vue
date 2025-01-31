@@ -21,7 +21,7 @@
         
         <p> 
           <button @click="isVisible = !isVisible"> Bridge Selection Tool </button>
-          <button @click="clearAllLayers()"> Restart </button>
+          <button @click="clearAllLayers(true)"> Restart </button>
           <button @click="resetView()"> Zoom to Region </button>
 
           
@@ -155,6 +155,30 @@
         });
 
     })
+
+    map_instance.value.on('click',"polygons", (e) => {
+
+      const properties = e.features[0].properties
+
+      const size=properties.clusterSize
+
+      const id = properties.cluster
+
+      const bridges = properties.bridges.replace('[','').replace(']','').split(',')
+
+      let msg = `<h2>Group ${id}</h2><p>${size} Bridges<p>`
+
+      for(let bridge of bridges){
+        console.log(bridge)
+        msg += `<p>${bridge}</p>`
+      }
+
+      new mapboxgl.Popup()
+                .setLngLat(e.lngLat)
+                .setHTML(msg)
+                .addTo(map_instance.value);
+
+    })
    
 
     // register move and zoom events to persist map viewport
@@ -247,8 +271,13 @@
                 type: 'circle',
                 source: "bridges",
                 paint: {
-                    'circle-color': '#000000',
-                    'circle-radius': 6
+                    'circle-color': {
+                        type: 'identity',
+                        property: 'color',
+                    },
+                    'circle-radius': 6,
+                    'circle-stroke-color':"#000000",
+                    'circle-stroke-width':1
                 }
           });
 
@@ -263,8 +292,13 @@
                 type: 'circle',
                 source: "clusters",
                 paint: {
-                    'circle-color': '#FF0000',
-                    'circle-radius': 6
+                    'circle-color': {
+                        type: 'identity',
+                        property: 'color',
+                    },
+                    'circle-radius': 8,
+                    'circle-stroke-color':"#FFFFFF",
+                    'circle-stroke-width':1
                 }
           });
 
@@ -279,7 +313,10 @@
                 type: 'fill',
                 source: 'polygons',
                 paint: {
-                    'fill-color': '#f08',
+                    'fill-color': {
+                        type: 'identity',
+                        property: 'color',
+                    },
                     'fill-opacity': 0.4
                 }
           });
@@ -338,10 +375,12 @@
     }
   }
 
-  const clearAllLayers = () => {
+  const clearAllLayers = (clear_draw=false) => {
 
-    draw_instance.value.deleteAll()
-
+    if (clear_draw){
+      draw_instance.value.deleteAll()
+    }
+    
     const layers = ["bridges","clusters","polygons"];
 
     for(let layer of layers){
