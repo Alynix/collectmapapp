@@ -138,11 +138,13 @@
       map_instance.value.on('draw.update', updateArea);
 
       map_instance.value.on('click', 'counties', (e) => {
-            //console.log(e.features[0].geometry)
+            console.log(e.features[0])
             
             draw_instance.value.deleteAll()
 
             draw_instance.value.add(e.features[0].geometry)
+
+            mapStore.showCounties = false
 
             updateArea()
             
@@ -337,6 +339,9 @@
   }
 
   const clearAllLayers = () => {
+
+    draw_instance.value.deleteAll()
+
     const layers = ["bridges","clusters","polygons"];
 
     for(let layer of layers){
