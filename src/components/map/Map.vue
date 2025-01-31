@@ -39,9 +39,9 @@
       </div>
 
       <div class="calculation-box">
-          <p>Click to draw a polygon.</p>
+          <p>Area:</p>
           <div id="calculated-area">
-            {{ mapStore.calcArea }}
+            {{ mapStore.calcArea }} km^2
           </div>
       </div>
     </div>
@@ -389,12 +389,12 @@
 
 .calculation-box {
         height: 80px;
-        width: 270px;
+        width: 150px;
         position: absolute;
-        bottom: 40px;
+        bottom: 10px;
         left: 10px;
-        background-color: rgba(255, 255, 255, 0.9);
-        padding: 15px;
+        background-color: rgba(240, 172, 47, 0.9);
+        padding: 16px;
         text-align: center;
 }
 
