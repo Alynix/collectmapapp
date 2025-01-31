@@ -15,12 +15,14 @@ export const useMapStore = defineStore("mapstore",() => {
     const showBridges = ref(true);
     const showClusters = ref(true);
 
+    const showCounties = ref(false);
+
     const calcArea = ref(0)
 
     const mapboxdraw_instance = ref({})
 
     const draw_data = ref(null)
 
-    return { mapbox_instance,map_mounted,mapCenter,mapZoom,showBridges,showClusters,showDraw,calcArea,mapboxdraw_instance,draw_data}
+    return { mapbox_instance,map_mounted,mapCenter,mapZoom,showBridges,showClusters,showDraw,showCounties,calcArea,mapboxdraw_instance,draw_data}
 
 });

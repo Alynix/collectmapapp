@@ -31,6 +31,9 @@
 
           <button @click="mapStore.showClusters = !mapStore.showClusters"> <span v-show="!mapStore.showClusters">Show</span> <span v-show="mapStore.showClusters">Hide</span> Clusters </button>
         
+          <button @click="mapStore.showCounties = !mapStore.showCounties"> <span v-show="!mapStore.showCounties">Show</span> <span v-show="mapStore.showCounties">Hide</span> Counties </button>
+
+
         </p>
 
       </div>
@@ -123,10 +126,25 @@
     mapStore.mapbox_instance.on("load",() => {
       mapStore.map_mounted = true;
 
+      map_instance.value.addSource("counties", {
+        type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
+        data: 'https://decker-public-hosting.s3.us-east-2.amazonaws.com/georef-united-states-of-america-county.geojson'
+      });
+
+      
+
 
       map_instance.value.on('draw.create', updateArea);
       map_instance.value.on('draw.delete', updateArea);
       map_instance.value.on('draw.update', updateArea);
+
+
+      map_instance.value.on('click', 'counties', (e) => {
+            new mapboxgl.Popup()
+                .setLngLat(e.lngLat)
+                .setHTML(e.features[0].properties.coty_name)
+                .addTo(map_instance.value);
+        });
 
     })
    
@@ -313,7 +331,6 @@
     const layers = ["bridges","clusters","polygons"];
 
     for(let layer of layers){
-      console.log(layer)
       clearLayer(layer);
     }
   }
