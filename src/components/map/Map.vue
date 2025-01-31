@@ -85,6 +85,8 @@
 
   const bbox = ref([-94.769437,38.924986,-94.763933,38.927766])
 
+  const drawPolygon = ref({})
+
   
 
   onMounted(() => {
@@ -131,18 +133,22 @@
         data: 'https://decker-public-hosting.s3.us-east-2.amazonaws.com/georef-united-states-of-america-county.geojson'
       });
 
-      
-
-
       map_instance.value.on('draw.create', updateArea);
       map_instance.value.on('draw.delete', updateArea);
       map_instance.value.on('draw.update', updateArea);
 
-
       map_instance.value.on('click', 'counties', (e) => {
+            //console.log(e.features[0].geometry)
+            
+            draw_instance.value.deleteAll()
+
+            draw_instance.value.add(e.features[0].geometry)
+
+            updateArea()
+            
             new mapboxgl.Popup()
                 .setLngLat(e.lngLat)
-                .setHTML(e.features[0].properties.coty_name)
+                .setHTML(e.features[0].properties.coty_name+e.features[0].properties.ste_name)
                 .addTo(map_instance.value);
         });
 
@@ -162,17 +168,17 @@
         id: "sb-embed",
         onEvent: handleEvent,
         // No properties defined. Use the Embed panel to add properties and uncomment this block.
-        properties: { EmbedBBOX: bbox.value }
+        properties: { EmbedGeoPolygon: drawPolygon.value }
     });
     
   superblocksWrapper.value.appendChild(sbAPP.value);
 
   });
 
-  watch(bbox,(newValue,oldValue)=>{
-    console.log('Old',oldValue)
-    console.log('New',newValue)
-    sbAPP.value.properties = {EmbedBBOX:newValue}
+  watch(drawPolygon,(newValue,oldValue)=>{
+    //console.log('Old',oldValue)
+    //console.log('New',newValue)
+    sbAPP.value.properties = {EmbedGeoPolygon:newValue}
   })
 
   onUnmounted(() => {
@@ -187,6 +193,9 @@
             const area = turf.area(data) / 1e6;
 
             bbox.value = turf.bbox(data)
+
+            console.log(data.features[0].geometry)
+            drawPolygon.value = data.features[0].geometry
 
             // Restrict the area to 2 decimal points.
             mapStore.calcArea = Math.round(area * 100) / 100;
