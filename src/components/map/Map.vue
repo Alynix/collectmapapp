@@ -17,24 +17,24 @@
 
       <div class="dialogue">
 
-        <p> NBI Bridge Clustering Tool</p>
-        
-        <p> 
-          <button @click="mapStore.isVisible = !mapStore.isVisible"> Bridge Selection Tool </button>
-          <button @click="clearAllLayers(true)"> Restart </button>
-          <button @click="resetView()"> Zoom to Region </button>
+        <div class="p-3 w-100% bg-gray-900 text-white">
+          <p> NBI Bridge Clustering Tool</p>
+
+          <button class="bg-green-500 mx-2 p-2 text-xs rounded-md"@click="mapStore.isVisible = !mapStore.isVisible"> Bridge Selection Tool </button>
+          <button class="bg-green-500 mx-2 p-2 text-xs rounded-md"@click="clearAllLayers(true)"> Restart </button>
+          <button class="bg-green-500 mx-2 p-2 text-xs rounded-md"@click="resetView()"> Zoom to Region </button>
 
           
-          <button @click="mapStore.showDraw = !mapStore.showDraw"> <span v-show="!mapStore.showDraw">Show</span> <span v-show="mapStore.showDraw">Hide</span> Polygon </button>
+          <button class="bg-green-500 mx-2 p-2 text-xs rounded-md" @click="mapStore.showDraw = !mapStore.showDraw"> <span v-show="!mapStore.showDraw">Show</span> <span v-show="mapStore.showDraw">Hide</span> Polygon </button>
         
-          <button @click="mapStore.showBridges = !mapStore.showBridges"> <span v-show="!mapStore.showBridges">Show</span> <span v-show="mapStore.showBridges">Hide</span> Bridges </button>
+          <button class="bg-green-500 mx-2 p-2 text-xs rounded-md" @click="mapStore.showBridges = !mapStore.showBridges"> <span v-show="!mapStore.showBridges">Show</span> <span v-show="mapStore.showBridges">Hide</span> Bridges </button>
 
-          <button @click="mapStore.showClusters = !mapStore.showClusters"> <span v-show="!mapStore.showClusters">Show</span> <span v-show="mapStore.showClusters">Hide</span> Clusters </button>
+          <button class="bg-green-500 mx-2 p-2 text-xs rounded-md" @click="mapStore.showClusters = !mapStore.showClusters"> <span v-show="!mapStore.showClusters">Show</span> <span v-show="mapStore.showClusters">Hide</span> Clusters </button>
         
-          <button @click="mapStore.showCounties = !mapStore.showCounties"> <span v-show="!mapStore.showCounties">Show</span> <span v-show="mapStore.showCounties">Hide</span> Counties </button>
+          <button class="bg-green-500 mx-2 p-2 text-xs rounded-md" @click="mapStore.showCounties = !mapStore.showCounties"> <span v-show="!mapStore.showCounties">Show</span> <span v-show="mapStore.showCounties">Hide</span> Counties </button>
 
 
-        </p>
+        </div>
 
       </div>
 
@@ -392,12 +392,10 @@
 
 .dialogue {
   position: absolute;
-  top: 6px;
+  top: 0px;
   left: 0px;
   width: 100%;
-  height: 70px;
-  background: #624cdb;
-  color: #FFF;
+  height: 60px;
 }
 
 .map-right-sidebar {
@@ -416,20 +414,14 @@
         bottom: 10px;
         left: 10px;
         background-color: rgba(240, 172, 47, 0.9);
-        padding: 16px;
+        padding: 0px;
         text-align: center;
 }
 
 p {
         font-family: 'Open Sans';
         margin: 0;
-        font-size: 24px;
-}
-
-button {
-        font-family: 'Open Sans';
-        margin: 0;
-        font-size: 18px;
+        font-size: 32px;
 }
 
 </style>

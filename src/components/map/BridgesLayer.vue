@@ -77,15 +77,8 @@ const showApp = () => {
             <span class="text-lg font-bold">NBI {{selectedBridge.properties['nbi_objectid']}}</span>
             <div class="grid grid-cols-4 py-3">
                 <div>
-                    <div class="text-gray-400"> <a v-bind:href="url" target="_blank">Street View</a></div>
-                <div>
                     <div>{{selectedBridge.properties['DECK_WIDTH_MT_052']}}m</div>
                     <div class="text-gray-400"> deck width</div>
-                    </div>
-                </div>
-                <div>
-                    <div>{{selectedBridge.properties['SURFACE_TYPE_108A']}}</div>
-                    <div class="text-gray-400"> surface type</div>
                 </div>
                 <div>
                     <div>{{parseInt(selectedBridge.properties['YEAR_BUILT_027'])}}</div>
@@ -93,7 +86,7 @@ const showApp = () => {
                 </div>
                 <div>
                     <div>{{selectedBridge.properties['ROUTE_NUMBER_005D']}}</div>
-                    <div class="text-gray-400"> condition</div>
+                    <div class="text-gray-400"> Route Number</div>
                 </div>
                 <div>
                     <div>{{selectedBridge.properties['cluster']}}</div>
@@ -104,7 +97,20 @@ const showApp = () => {
             <button class="bg-green-500 mx-2 p-2 text-xs rounded-md">
                 <span @click="showApp()">View Details</span>
             </button>
+            <button class="bg-green-500 mx-2 p-2 text-xs rounded-md">
+                <span @click=""><a v-bind:href="url" target="_blank">Street View</a></span>
+            </button>
         </div>
         
     </div>
 </template>
+
+<style>
+
+.mapboxgl-popup-content {
+    background: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+</style>
