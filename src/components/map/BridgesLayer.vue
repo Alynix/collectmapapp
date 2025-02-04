@@ -75,10 +75,14 @@ const showApp = () => {
     <div class="popup-content" v-if="selectedBridge != null" ref="popupContent">
         <div class="p-3 w-96 bg-gray-900 text-white">
             <span class="text-lg font-bold">NBI {{selectedBridge.properties['nbi_objectid']}}</span>
-            <div class="grid grid-cols-4 py-3">
+            <div class="grid grid-cols-6 py-3">
                 <div>
-                    <div>{{selectedBridge.properties['DECK_WIDTH_MT_052']}}m</div>
-                    <div class="text-gray-400"> deck width</div>
+                    <div>{{selectedBridge.properties['DECK_WIDTH_MT_052']}}</div>
+                    <div class="text-gray-400">width</div>
+                </div>
+                <div>
+                    <div>{{selectedBridge.properties['STRUCTURE_LEN_MT_049']}}</div>
+                    <div class="text-gray-400">length</div>
                 </div>
                 <div>
                     <div>{{parseInt(selectedBridge.properties['YEAR_BUILT_027'])}}</div>
@@ -86,7 +90,11 @@ const showApp = () => {
                 </div>
                 <div>
                     <div>{{selectedBridge.properties['ROUTE_NUMBER_005D']}}</div>
-                    <div class="text-gray-400"> Route Number</div>
+                    <div class="text-gray-400"> Route</div>
+                </div>
+                <div>
+                    <div>{{selectedBridge.properties['TRAFFIC_LANES_ON_028A']}}</div>
+                    <div class="text-gray-400"> #Lanes</div>
                 </div>
                 <div>
                     <div>{{selectedBridge.properties['cluster']}}</div>
