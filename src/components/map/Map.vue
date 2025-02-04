@@ -13,14 +13,14 @@
       
       
 
-      <div ref="superblocksWrapper" class="sb-container" v-show="isVisible"></div>
+      <div ref="superblocksWrapper" class="sb-container" v-show="mapStore.isVisible"></div>
 
       <div class="dialogue">
 
         <p> NBI Bridge Clustering Tool</p>
         
         <p> 
-          <button @click="isVisible = !isVisible"> Bridge Selection Tool </button>
+          <button @click="mapStore.isVisible = !mapStore.isVisible"> Bridge Selection Tool </button>
           <button @click="clearAllLayers(true)"> Restart </button>
           <button @click="resetView()"> Zoom to Region </button>
 
@@ -80,8 +80,6 @@
   const draw_instance = ref(null);
 
   const search_container_el = ref(null);
-
-  const isVisible = ref(false)
 
   const bbox = ref([-94.769437,38.924986,-94.763933,38.927766])
 
@@ -161,31 +159,6 @@
 
     })
 
-    map_instance.value.on('click',"polygons", (e) => {
-
-      const properties = e.features[0].properties
-
-      const size=properties.clusterSize
-
-      const id = properties.cluster
-
-      const bridges = properties.bridges.replace('[','').replace(']','').split(',')
-
-      let msg = `<h2>Group ${id}</h2><p>${size} Bridges<p><ul>`
-
-      for(let bridge of bridges){
-        msg += `<li>${bridge.slice(1,-1)}</li>`
-      }
-      msg += `</ul>`
-
-      new mapboxgl.Popup()
-                .setLngLat(e.lngLat)
-                .setHTML(msg)
-                .addTo(map_instance.value);
-
-    })
-   
-
     // register move and zoom events to persist map viewport
     map_instance.value.on('move', (e) => {
       storeViewport(map_instance.value.getCenter(), map_instance.value.getZoom())
@@ -252,7 +225,7 @@
 
   const resetView = () => {
 
-    isVisible.value = false
+    mapStore.isVisible = false
 
     map_instance.value.fitBounds(bbox.value)
   }
@@ -355,11 +328,11 @@
 
         break;
       case "rowClicked1":
-        isVisible.value = false
+        mapStore.isVisible = false
         zoomToCoordinates(payload.coords[0],payload.coords[1])
         break;
       case "zoomBridge":
-        isVisible.value = false
+        mapStore.isVisible = false
         zoomToCoordinates(payload.coords[0],payload.coords[1],18)
         break;
       default:

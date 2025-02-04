@@ -1,8 +1,15 @@
 <script setup>
 import { useMapStore } from '@/stores/mapstore';
-import { onMounted, onUnmounted, ref } from 'vue';
+import { polygonSmooth } from '@turf/turf';
+import { onMounted, onUnmounted, ref, nextTick } from 'vue';
+
+import mapboxgl from 'mapbox-gl';
 
 const mapStore = useMapStore();
+
+const selectedCluster = ref(null);
+
+const popupContent = ref(null);
 
 onMounted(() => {
     let map_instance = mapStore.mapbox_instance
@@ -39,6 +46,24 @@ onMounted(() => {
           });
     }
 
+    //click event for polygons 
+
+    map_instance.on('click', 'polygons', async (e) => {
+        selectedCluster.value = e.features[0]
+        
+        // Need the dom update cycle to complete 
+        // so that the NBI popup is mounted and rendered
+        await nextTick();
+
+        new mapboxgl.Popup({anchor: 'bottom-right'})
+            .setLngLat(e.lngLat)
+            .setDOMContent(
+                popupContent.value
+            )
+            .addTo(map_instance);
+
+    });
+
 })
 
 onUnmounted(() => {
@@ -53,4 +78,32 @@ onUnmounted(() => {
     }
 })
 
+const showApp = () => {
+    mapStore.isVisible = true;
+}
+
 </script>
+
+<template>
+    <div class="popup-content" v-if="selectedCluster != null" ref="popupContent">
+        <div class="p-3 w-96 bg-gray-900 text-white">
+            <span class="text-lg font-bold">Cluster {{selectedCluster.properties['cluster']}}</span>
+            <div class="grid grid-cols-4 py-3">
+                <div>
+                    <div>{{selectedCluster.properties['clusterSize']}}</div>
+                    <div class="text-gray-400"> Size</div>
+                </div>
+                <div>
+                    <div>{{selectedCluster.properties['bridges']}}</div>
+                    <div class="text-gray-400"> Bridges</div>
+                </div>
+            </div>
+
+            <button class="bg-green-500 mx-2 p-2 text-xs rounded-md">
+                <span @click="showApp()">View Details</span>
+            </button>
+
+        </div>
+        
+    </div>
+</template>

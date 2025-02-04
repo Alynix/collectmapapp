@@ -23,6 +23,8 @@ export const useMapStore = defineStore("mapstore",() => {
 
     const draw_data = ref(null)
 
+    const isVisible = ref(false) // toggle embbedded Superblocks app visibility 
+
     return { mapbox_instance,map_mounted,mapCenter,mapZoom,showBridges,showClusters,showDraw,showCounties,calcArea,mapboxdraw_instance,draw_data}
 
 });
