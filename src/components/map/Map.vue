@@ -149,7 +149,7 @@
 
             const state = e.features[0].properties.ste_name.replace("]","").replace("[","").slice(1,-1)
 
-            const msg = `<h2>${county} county, ${state}<h2>`
+            const msg = `<div class="bg-yellow-300 p-4 text-black"><h2>${county} county, ${state}<h2></div>`
             
             new mapboxgl.Popup()
                 .setLngLat(e.lngLat)
@@ -413,7 +413,7 @@
         position: absolute;
         bottom: 10px;
         left: 10px;
-        background-color: rgba(240, 172, 47, 0.9);
+        background-color: rgba(240, 228, 67, 0.9);
         padding: 0px;
         text-align: center;
 }
