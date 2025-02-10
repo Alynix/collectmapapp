@@ -87,7 +87,7 @@ const showApp = () => {
 <template>
     <div class="popup-content" v-if="selectedCluster != null" ref="popupContent">
         <div class="p-3 w-96 bg-gray-900 text-white">
-            <span class="text-lg font-bold">Cluster id: {{selectedCluster.properties['cluster']}}</span>
+            <span class="text-lg font-bold">Cluster id: {{selectedCluster.properties['pk']}}</span>
             <div class="grid grid-cols-3 py-3">
                 <div>
                     <div>{{selectedCluster.properties['clusterSize']}}</div>

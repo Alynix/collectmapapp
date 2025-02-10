@@ -167,7 +167,7 @@
     
 
   sbAPP.value = createSuperblocksEmbed({
-        src: "https://app.superblocks.com/embed/applications/7246b0b7-e120-4d22-949a-71cca2a7ecba",
+        src: "https://app.superblocks.com/embed/applications/7472fe5c-cb1c-41c4-8026-bca71ddf467a",
         colorScheme: "dark",
         id: "sb-embed",
         onEvent: handleEvent,
@@ -234,9 +234,9 @@
 
     switch(eventName){
 
-      case "buttonClicked":
+      case "bridgesReturned":
 
-        clearAllLayers()
+        clearLayer("bridges")
 
         map_instance.value.addSource("bridges", {
         type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
@@ -259,7 +259,12 @@
                 }
           });
 
-          map_instance.value.addSource("clusters", {
+        break;
+      case "clustersReturned":
+        
+        clearLayer("clusters")
+
+        map_instance.value.addSource("clusters", {
         type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
         data: payload.clusters
 
@@ -274,13 +279,15 @@
                         type: 'identity',
                         property: 'color',
                     },
-                    'circle-radius': 8,
-                    'circle-stroke-color':"#FFFFFF",
+                    'circle-radius': 6,
+                    'circle-stroke-color':"#000000",
                     'circle-stroke-width':1
                 }
           });
 
-          map_instance.value.addSource("polygons", {
+          clearLayer("polygons")
+
+        map_instance.value.addSource("polygons", {
         type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
         data: payload.polygons
 
@@ -291,50 +298,36 @@
                 type: 'fill',
                 source: 'polygons',
                 paint: {
-                    'fill-color': {
-                        type: 'identity',
-                        property: 'color',
-                    },
-                    'fill-opacity': 0.4
-                }
-          });
-
-        break;
-      case "clusterSplit":
-
-        if (map_instance.value.getLayer("polygons2")) {
-          map_instance.value.removeLayer("polygons2");
-        }
-
-        if (map_instance.value.getSource("polygons2")) {
-          map_instance.value.removeSource("polygons2");
-        }
-
-        map_instance.value.addSource("polygons2", {
-        type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
-        data: payload.polygons
-
-            });
-
-        map_instance.value.addLayer({
-                id: "polygons2",
-                type: 'fill',
-                source: 'polygons2',
-                paint: {
                     'fill-color': '#FFFF00',
                     'fill-opacity': 0.6
                 }
           });
 
         break;
-      case "rowClicked1":
+      case "clusterDeleted":
+
         mapStore.isVisible = false
-        zoomToCoordinates(payload.coords[0],payload.coords[1])
+
+        const cluster_pk = payload.pk 
+
+        const clusters = map_instance.value.querySourceFeatures("clusters")
+
+        const cluster = clusters.filter((c) => c.properties.pk == cluster_pk)
+
+        //delete the cluster from the map
+        if (cluster.length > 0){
+          map_instance.value.removeFeatureState({
+            source: 'clusters',
+            id: cluster[0].id
+          });
+        }
         break;
-      case "zoomBridge":
-        mapStore.isVisible = false
-        zoomToCoordinates(payload.coords[0],payload.coords[1],18)
-        break;
+      case "clusterSplit":
+        //split the cluster 
+
+      case "clustersMerged":
+        //merge the clusters
+
       default:
         // default here 
 
