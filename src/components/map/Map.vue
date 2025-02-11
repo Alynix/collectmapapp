@@ -22,7 +22,7 @@
 
           <button class="bg-green-500 mx-2 p-2 text-xs rounded-md"@click="mapStore.isVisible = !mapStore.isVisible"> Bridge Selection Tool </button>
           <button class="bg-green-500 mx-2 p-2 text-xs rounded-md"@click="clearAllLayers(true)"> Restart </button>
-          <button class="bg-green-500 mx-2 p-2 text-xs rounded-md"@click="resetView()"> Zoom to Region </button>
+          <button class="bg-green-500 mx-2 p-2 text-xs rounded-md"@click="resetView(bbox)"> Zoom to Region </button>
 
           
           <button class="bg-green-500 mx-2 p-2 text-xs rounded-md" @click="mapStore.showDraw = !mapStore.showDraw"> <span v-show="!mapStore.showDraw">Show</span> <span v-show="mapStore.showDraw">Hide</span> Polygon </button>
@@ -64,7 +64,7 @@
 
   import * as turf from "@turf/turf";
 
-  import { useMapStore } from "@/stores/mapstore"
+  import { useMapStore } from "@/stores/mapstore";
   
   const superblocksWrapper = ref(null)
   const sbAPP = ref(null)
@@ -82,6 +82,8 @@
   const search_container_el = ref(null);
 
   const bbox = ref([-94.769437,38.924986,-94.763933,38.927766])
+
+  const cluster_bbox = ref([])
 
   const drawPolygon = ref({})
 
@@ -223,11 +225,11 @@
     });
   }
 
-  const resetView = () => {
+  const resetView = (view_bbox) => {
 
-    mapStore.isVisible = false
+    mapStore.isVisible = false;
 
-    map_instance.value.fitBounds(bbox.value)
+    map_instance.value.fitBounds(view_bbox)
   }
 
   const handleEvent = (eventName, payload) => {
@@ -249,10 +251,7 @@
                 type: 'circle',
                 source: "bridges",
                 paint: {
-                    'circle-color': {
-                        type: 'identity',
-                        property: 'color',
-                    },
+                    'circle-color': "#1F51FF",
                     'circle-radius': 6,
                     'circle-stroke-color':"#000000",
                     'circle-stroke-width':1
@@ -272,61 +271,31 @@
 
         map_instance.value.addLayer({
                 id: "clusters",
-                type: 'circle',
+                type: 'fill',
                 source: "clusters",
                 paint: {
-                    'circle-color': {
-                        type: 'identity',
-                        property: 'color',
-                    },
-                    'circle-radius': 6,
-                    'circle-stroke-color':"#000000",
-                    'circle-stroke-width':1
-                }
-          });
-
-          clearLayer("polygons")
-
-        map_instance.value.addSource("polygons", {
-        type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
-        data: payload.polygons
-
-            });
-
-        map_instance.value.addLayer({
-                id: "polygons",
-                type: 'fill',
-                source: 'polygons',
-                paint: {
-                    'fill-color': '#FFFF00',
-                    'fill-opacity': 0.6
+                    'fill-color' : "#ff0000",
+                    'fill-opacity': 0.5,
+                    'fill-outline-color': "#000000"
                 }
           });
 
         break;
-      case "clusterDeleted":
-
-        mapStore.isVisible = false
-
-        const cluster_pk = payload.pk 
-
-        const clusters = map_instance.value.querySourceFeatures("clusters")
-
-        const cluster = clusters.filter((c) => c.properties.pk == cluster_pk)
-
-        //delete the cluster from the map
-        if (cluster.length > 0){
-          map_instance.value.removeFeatureState({
-            source: 'clusters',
-            id: cluster[0].id
-          });
-        }
-        break;
+      
       case "clusterSplit":
         //split the cluster 
 
       case "clustersMerged":
         //merge the clusters
+
+      case "zoomToCluster":
+
+        cluster_bbox.value = turf.bbox(payload.polygon); 
+        
+        mapStore.isVisible = false;
+
+        resetView(cluster_bbox.value);
+
 
       default:
         // default here 
@@ -352,7 +321,7 @@
       draw_instance.value.deleteAll()
     }
     
-    const layers = ["bridges","clusters","polygons"];
+    const layers = ["bridges","clusters"];
 
     for(let layer of layers){
       clearLayer(layer);

@@ -14,41 +14,22 @@ const popupContent = ref(null);
 onMounted(() => {
     let map_instance = mapStore.mapbox_instance
 
-    if (map_instance.getSource("polygons")){
-        map_instance.addLayer({
-                id: "polygons",
-                type: 'fill',
-                source: 'polygons',
-                paint: {
-                    'fill-color': {
-                        type: 'identity',
-                        property: 'color',
-                    },
-                    'fill-opacity': 0.4
-                }
-          });
-    }
-
     if (map_instance.getSource("clusters")){
         map_instance.addLayer({
                 id: "clusters",
-                type: 'circle',
+                type: 'fill',
                 source: "clusters",
                 paint: {
-                    'circle-color': {
-                        type: 'identity',
-                        property: 'color',
-                    },
-                    'circle-radius': 8,
-                    'circle-stroke-color':"#FFFFFF",
-                    'circle-stroke-width':1
+                    'fill-color' : "#ff0000",
+                    'fill-opacity': 0.5,
+                    'fill-outline-color': "#000000"
                 }
           });
     }
 
     //click event for polygons 
 
-    map_instance.on('click', 'polygons', async (e) => {
+    map_instance.on('click', 'clusters', async (e) => {
         selectedCluster.value = e.features[0]
         
         // Need the dom update cycle to complete 
@@ -73,9 +54,6 @@ onUnmounted(() => {
       map_instance.removeLayer("clusters");
     }
 
-    if (map_instance.getLayer("polygons")) {
-      map_instance.removeLayer("polygons");
-    }
 })
 
 const showApp = () => {
@@ -87,7 +65,7 @@ const showApp = () => {
 <template>
     <div class="popup-content" v-if="selectedCluster != null" ref="popupContent">
         <div class="p-3 w-96 bg-gray-900 text-white">
-            <span class="text-lg font-bold">Cluster id: {{selectedCluster.properties['pk']}}</span>
+            <span class="text-lg font-bold">Cluster id: {{selectedCluster.id}}</span>
             <div class="grid grid-cols-3 py-3">
                 <div>
                     <div>{{selectedCluster.properties['clusterSize']}}</div>

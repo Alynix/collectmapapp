@@ -24,10 +24,7 @@ onMounted(() => {
                 type: 'circle',
                 source: "bridges",
                 paint: {
-                    'circle-color': {
-                        type: 'identity',
-                        property: 'color',
-                    },
+                    'circle-color': '#1F51FF',
                     'circle-radius': 6,
                     'circle-stroke-color':"#000000",
                     'circle-stroke-width':1
