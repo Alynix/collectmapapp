@@ -274,7 +274,11 @@
                 type: 'fill',
                 source: "clusters",
                 paint: {
-                    'fill-color' : "#ff0000",
+                    'fill-color' : [
+                      'case',
+                      ['==', ['get', 'saved'], true], '#FF0000',
+                      '#FFFF00'
+                    ],
                     'fill-opacity': 0.5,
                     'fill-outline-color': "#000000"
                 }
