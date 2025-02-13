@@ -20,7 +20,11 @@ onMounted(() => {
                 type: 'fill',
                 source: "clusters",
                 paint: {
-                    'fill-color' : "#ff0000",
+                    'fill-color' : [
+                      'case',
+                      ['==', ['get', 'saved'], true], '#FF0000',
+                      '#FFFF00'
+                    ],
                     'fill-opacity': 0.5,
                     'fill-outline-color': "#000000"
                 }
@@ -60,6 +64,13 @@ const showApp = () => {
     mapStore.isVisible = true;
 }
 
+const triggerModelOpen = (cluster_id) => {
+    
+    mapStore.isVisible = true;
+    mapStore.sbAPP.trigger('openClusterModal', {"cluster_id":String(cluster_id)}) 
+
+}
+
 </script>
 
 <template>
@@ -81,7 +92,7 @@ const showApp = () => {
 
                 <span>
                     <button class="bg-green-500 mx-2 p-2 text-xs rounded-md">
-                        <span @click="showApp()">View Details</span>
+                        <span @click="triggerModelOpen(selectedCluster.id)">View Details</span>
                     </button>
                 </span>
 

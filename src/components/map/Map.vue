@@ -67,9 +67,6 @@
   import { useMapStore } from "@/stores/mapstore";
   
   const superblocksWrapper = ref(null)
-  const sbAPP = ref(null)
-
-
 
   const map_el = ref(null);
   const map_instance = ref(null);
@@ -168,7 +165,7 @@
 
     
 
-  sbAPP.value = createSuperblocksEmbed({
+  mapStore.sbAPP = createSuperblocksEmbed({
         src: "https://app.superblocks.com/embed/applications/7472fe5c-cb1c-41c4-8026-bca71ddf467a",
         colorScheme: "dark",
         id: "sb-embed",
@@ -177,14 +174,14 @@
         properties: { EmbedGeoPolygon: drawPolygon.value }
     });
     
-  superblocksWrapper.value.appendChild(sbAPP.value);
+  superblocksWrapper.value.appendChild(mapStore.sbAPP);
 
   });
 
   watch(drawPolygon,(newValue,oldValue)=>{
     //console.log('Old',oldValue)
     //console.log('New',newValue)
-    sbAPP.value.properties = {EmbedGeoPolygon:newValue}
+    mapStore.sbAPP.properties = {EmbedGeoPolygon:newValue}
   })
 
   onUnmounted(() => {
@@ -251,7 +248,11 @@
                 type: 'circle',
                 source: "bridges",
                 paint: {
-                    'circle-color': "#1F51FF",
+                    'circle-color' : [
+                      'case',
+                      ['==', ['get', 'inCluster'], false], '#FFFF00',
+                      '#00FF00'
+                    ],
                     'circle-radius': 6,
                     'circle-stroke-color':"#000000",
                     'circle-stroke-width':1

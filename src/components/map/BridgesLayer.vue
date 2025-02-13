@@ -24,7 +24,11 @@ onMounted(() => {
                 type: 'circle',
                 source: "bridges",
                 paint: {
-                    'circle-color': '#1F51FF',
+                    'circle-color' : [
+                      'case',
+                      ['==', ['get', 'inCluster'], false], '#FFFF00',
+                      '#00FF00'
+                    ],
                     'circle-radius': 6,
                     'circle-stroke-color':"#000000",
                     'circle-stroke-width':1
@@ -66,6 +70,25 @@ const showApp = () => {
     mapStore.isVisible = true;
 }
 
+const buttonAction = (properties) => {
+    if (properties['inCluster'] == true) {
+        return "Remove from Cluster"
+    } else {
+        return "Add to Cluster"
+    }
+}
+
+const triggerClusterUpdate = (properties) => {
+    if (properties['inCluster'] == true) {
+        mapStore.isVisible = true;
+        console.log(properties['cluster_id'])
+        mapStore.sbAPP.trigger('removeFromCluster', {"cluster_id":String(properties['cluster_id']),"nbi_objectid":properties['nbi_objectid']})
+    } else {
+        mapStore.isVisible = true;
+        mapStore.sbAPP.trigger('addToCluster', {"cluster_id":"0000","nbi_objectid":properties['nbi_objectid']})
+    }
+}
+
 </script>
 
 <template>
@@ -94,7 +117,7 @@ const showApp = () => {
                     <div class="text-gray-400"> #Lanes</div>
                 </div>
                 <div>
-                    <div>{{selectedBridge.properties['cluster']}}</div>
+                    <div>{{selectedBridge.properties['cluster_id']}}</div>
                     <div class="text-gray-400"> cluster id</div>
                 </div>
             </div>
@@ -104,6 +127,9 @@ const showApp = () => {
             </button>
             <button class="bg-green-500 mx-2 p-2 text-xs rounded-md">
                 <span @click=""><a v-bind:href="url" target="_blank">Street View</a></span>
+            </button>
+            <button class="bg-green-500 mx-2 p-2 text-xs rounded-md">
+                <span @click="triggerClusterUpdate(selectedBridge.properties)">{{buttonAction(selectedBridge.properties)}}</span>
             </button>
         </div>
         

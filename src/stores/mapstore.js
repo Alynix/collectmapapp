@@ -25,6 +25,8 @@ export const useMapStore = defineStore("mapstore",() => {
 
     const isVisible = ref(false) // toggle embbedded Superblocks app visibility 
 
-    return { mapbox_instance,map_mounted,mapCenter,mapZoom,showBridges,showClusters,showDraw,showCounties,calcArea,mapboxdraw_instance,draw_data}
+    const sbAPP = ref(null) // Superblocks app instance
+
+    return { mapbox_instance,map_mounted,mapCenter,mapZoom,showBridges,showClusters,showDraw,showCounties,calcArea,mapboxdraw_instance,draw_data,isVisible,sbAPP }
 
 });
