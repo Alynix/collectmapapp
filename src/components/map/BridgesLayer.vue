@@ -15,6 +15,8 @@ const url = ref(null);
 
 const popupContent = ref(null);
 
+const numberInput = ref(0);
+
 onMounted(() => {
     let map_instance = mapStore.mapbox_instance
 
@@ -74,7 +76,7 @@ const buttonAction = (properties) => {
     if (properties['inCluster'] == true) {
         return "Remove from Cluster"
     } else {
-        return "Add to Cluster"
+        return "Add to "
     }
 }
 
@@ -85,7 +87,7 @@ const triggerClusterUpdate = (properties) => {
         mapStore.sbAPP.trigger('removeFromCluster', {"cluster_id":String(properties['cluster_id']),"nbi_objectid":properties['nbi_objectid']})
     } else {
         mapStore.isVisible = true;
-        mapStore.sbAPP.trigger('addToCluster', {"cluster_id":"0000","nbi_objectid":properties['nbi_objectid']})
+        mapStore.sbAPP.trigger('addToCluster', {"cluster_id":String(numberInput.value),"nbi_objectid":properties['nbi_objectid']})
     }
 }
 
@@ -129,10 +131,10 @@ const triggerClusterUpdate = (properties) => {
                 <span @click=""><a v-bind:href="url" target="_blank">Street View</a></span>
             </button>
             <button class="bg-green-500 mx-2 p-2 text-xs rounded-md">
-                <span @click="triggerClusterUpdate(selectedBridge.properties)">{{buttonAction(selectedBridge.properties)}}</span>
+                <span @click="triggerClusterUpdate(selectedBridge.properties)">{{buttonAction(selectedBridge.properties) + "  "}}</span>
+                <input type="number" v-model="numberInput" v-if="!selectedBridge.properties['inCluster']" class="w-10 h-6 text-black" />
             </button>
         </div>
-        
     </div>
 </template>
 
