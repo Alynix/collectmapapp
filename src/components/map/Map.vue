@@ -21,12 +21,13 @@
           <p> NBI Bridge Clustering Tool</p>
 
           <button class="bg-green-500 mx-2 p-2 text-xs rounded-md"@click="mapStore.isVisible = !mapStore.isVisible"> Bridge Selection Tool </button>
-          <button class="bg-green-500 mx-2 p-2 text-xs rounded-md"@click="clearAllLayers(true)"> Restart </button>
-          <button class="bg-green-500 mx-2 p-2 text-xs rounded-md"@click="resetView(bbox)"> Zoom to Region </button>
-
           
+          <button class="bg-green-500 mx-2 p-2 text-xs rounded-md"@click="resetView(planBBOX)"> Zoom to Region </button>
+
+          <!-- disable button for toggling draw polygon. 
           <button class="bg-green-500 mx-2 p-2 text-xs rounded-md" @click="mapStore.showDraw = !mapStore.showDraw"> <span v-show="!mapStore.showDraw">Show</span> <span v-show="mapStore.showDraw">Hide</span> Polygon </button>
-        
+           -->
+
           <button class="bg-green-500 mx-2 p-2 text-xs rounded-md" @click="mapStore.showBridges = !mapStore.showBridges"> <span v-show="!mapStore.showBridges">Show</span> <span v-show="mapStore.showBridges">Hide</span> Bridges </button>
 
           <button class="bg-green-500 mx-2 p-2 text-xs rounded-md" @click="mapStore.showClusters = !mapStore.showClusters"> <span v-show="!mapStore.showClusters">Show</span> <span v-show="mapStore.showClusters">Hide</span> Clusters </button>
@@ -79,6 +80,8 @@
   const search_container_el = ref(null);
 
   const bbox = ref([-94.769437,38.924986,-94.763933,38.927766])
+
+  const planBBOX = ref([])
 
   const cluster_bbox = ref([])
 
@@ -197,7 +200,7 @@
 
             bbox.value = turf.bbox(data)
 
-            console.log(data.features[0].geometry)
+            //console.log(data.features[0].geometry)
             drawPolygon.value = data.features[0].geometry
 
             // Restrict the area to 2 decimal points.
@@ -287,12 +290,33 @@
 
         break;
       
-      case "clusterSplit":
-        //split the cluster 
+      case "planPolygonReturned":
+        //add layer for the polygon of current macro plan
+        clearLayer("plan")
 
-      case "clustersMerged":
-        //merge the clusters
+        map_instance.value.addSource("plan", {
+        type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
+        data: payload.plan
 
+            });
+
+        map_instance.value.addLayer({
+            id: "plan",
+            type: 'fill',
+            source: "plan",
+            paint: {
+                'fill-color' : "#87CEEB",
+                'fill-opacity': 0.3,
+                'fill-outline-color': "#000000"
+            }
+      });
+
+        planBBOX.value = turf.bbox(payload.plan.geometry)
+
+        resetView(planBBOX.value)
+
+        break;
+      
       case "zoomToCluster":
 
         cluster_bbox.value = turf.bbox(payload.polygon); 
@@ -326,7 +350,7 @@
       draw_instance.value.deleteAll()
     }
     
-    const layers = ["bridges","clusters"];
+    const layers = ["bridges","clusters","plan"];
 
     for(let layer of layers){
       clearLayer(layer);

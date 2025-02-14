@@ -71,6 +71,13 @@ const triggerModelOpen = (cluster_id) => {
 
 }
 
+const checkSaved = (properties) => {
+    if (properties['saved'] == true){
+        return true
+    }
+    return false
+}
+
 </script>
 
 <template>
@@ -91,7 +98,7 @@ const triggerModelOpen = (cluster_id) => {
                 </div>
 
                 <span>
-                    <button class="bg-green-500 mx-2 p-2 text-xs rounded-md">
+                    <button v-if="checkSaved(selectedCluster.properties)" class="bg-green-500 mx-2 p-2 text-xs rounded-md">
                         <span @click="triggerModelOpen(selectedCluster.id)">View Details</span>
                     </button>
                 </span>
