@@ -18,22 +18,25 @@
       <div class="dialogue">
 
         <div class="p-3 w-100% bg-gray-900 text-white">
-          <p> NBI Bridge Clustering Tool</p>
+          <p> Bridge Collection Clusters </p>
 
           <button class="bg-green-500 mx-2 p-2 text-xs rounded-md"@click="mapStore.isVisible = !mapStore.isVisible"> Bridge Selection Tool </button>
           
-          <button class="bg-green-500 mx-2 p-2 text-xs rounded-md"@click="resetView(planBBOX)"> Zoom to Region </button>
+          <button class="bg-orange-500 mx-2 p-2 text-xs rounded-md"@click="resetView(planBBOX)"> Zoom to Region </button>
+
+
 
           <!-- disable button for toggling draw polygon. 
           <button class="bg-green-500 mx-2 p-2 text-xs rounded-md" @click="mapStore.showDraw = !mapStore.showDraw"> <span v-show="!mapStore.showDraw">Show</span> <span v-show="mapStore.showDraw">Hide</span> Polygon </button>
            -->
 
-          <button class="bg-green-500 mx-2 p-2 text-xs rounded-md" @click="mapStore.showBridges = !mapStore.showBridges"> <span v-show="!mapStore.showBridges">Show</span> <span v-show="mapStore.showBridges">Hide</span> Bridges </button>
+          <button class="bg-blue-500 mx-2 p-2 text-xs rounded-md" @click="mapStore.showBridges = !mapStore.showBridges"> <span v-show="!mapStore.showBridges">Show</span> <span v-show="mapStore.showBridges">Hide</span> Bridges </button>
 
-          <button class="bg-green-500 mx-2 p-2 text-xs rounded-md" @click="mapStore.showClusters = !mapStore.showClusters"> <span v-show="!mapStore.showClusters">Show</span> <span v-show="mapStore.showClusters">Hide</span> Clusters </button>
+          <button class="bg-blue-500 mx-2 p-2 text-xs rounded-md" @click="mapStore.showClusters = !mapStore.showClusters"> <span v-show="!mapStore.showClusters">Show</span> <span v-show="mapStore.showClusters">Hide</span> Clusters </button>
         
-          <button class="bg-green-500 mx-2 p-2 text-xs rounded-md" @click="mapStore.showCounties = !mapStore.showCounties"> <span v-show="!mapStore.showCounties">Show</span> <span v-show="mapStore.showCounties">Hide</span> Counties </button>
+          <button class="bg-blue-500 mx-2 p-2 text-xs rounded-md" @click="mapStore.showCounties = !mapStore.showCounties"> <span v-show="!mapStore.showCounties">Show</span> <span v-show="mapStore.showCounties">Hide</span> Counties </button>
 
+          <button class="bg-red-500 mx-2 p-2 text-xs rounded-md"@click="clearAllLayers(clear_draw=true)"> Clear Map </button>
 
         </div>
 
@@ -256,7 +259,11 @@
                       ['==', ['get', 'inCluster'], false], '#FFFF00',
                       '#00FF00'
                     ],
-                    'circle-radius': 6,
+                    'circle-radius': [
+                      'case',
+                      ['==', ['get', 'inCluster'], false], 4,
+                      6
+                    ],
                     'circle-stroke-color':"#000000",
                     'circle-stroke-width':1
                 }

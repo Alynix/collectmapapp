@@ -31,7 +31,11 @@ onMounted(() => {
                       ['==', ['get', 'inCluster'], false], '#FFFF00',
                       '#00FF00'
                     ],
-                    'circle-radius': 6,
+                    'circle-radius': [
+                      'case',
+                      ['==', ['get', 'inCluster'], false], 4,
+                      6
+                    ],
                     'circle-stroke-color':"#000000",
                     'circle-stroke-width':1
                 }
