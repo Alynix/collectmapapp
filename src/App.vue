@@ -24,7 +24,6 @@ const mapStore=useMapStore();
     </MyMap>
 
     <CountyLayer v-if="mapStore.map_mounted && mapStore.showCounties"></CountyLayer>
-    
     <DrawLayer v-if="mapStore.map_mounted && mapStore.showDraw"></DrawLayer>
     <BridgesLayer v-if="mapStore.map_mounted && mapStore.showBridges"></BridgesLayer>
     <ClustersLayer v-if="mapStore.map_mounted && mapStore.showClusters"></ClustersLayer>

@@ -13,28 +13,32 @@
       
       
 
-      <div ref="superblocksWrapper" class="sb-container" v-show="isVisible"></div>
+      <div ref="superblocksWrapper" class="sb-container" v-show="mapStore.isVisible"></div>
 
       <div class="dialogue">
 
-        <p> NBI Bridge Clustering Tool</p>
-        
-        <p> 
-          <button @click="isVisible = !isVisible"> Bridge Selection Tool </button>
-          <button @click="clearAllLayers(true)"> Restart </button>
-          <button @click="resetView()"> Zoom to Region </button>
+        <div class="p-3 w-100% bg-gray-900 text-white">
+          <p> Bridge Collection Clusters </p>
 
+          <button class="bg-green-500 mx-2 p-2 text-xs rounded-md"@click="mapStore.isVisible = !mapStore.isVisible"> Bridge Selection Tool </button>
           
-          <button @click="mapStore.showDraw = !mapStore.showDraw"> <span v-show="!mapStore.showDraw">Show</span> <span v-show="mapStore.showDraw">Hide</span> Polygon </button>
+          <button class="bg-orange-500 mx-2 p-2 text-xs rounded-md"@click="resetView(planBBOX)"> Zoom to Region </button>
+
+
+
+          <!-- disable button for toggling draw polygon. 
+          <button class="bg-green-500 mx-2 p-2 text-xs rounded-md" @click="mapStore.showDraw = !mapStore.showDraw"> <span v-show="!mapStore.showDraw">Show</span> <span v-show="mapStore.showDraw">Hide</span> Polygon </button>
+           -->
+
+          <button class="bg-blue-500 mx-2 p-2 text-xs rounded-md" @click="mapStore.showBridges = !mapStore.showBridges"> <span v-show="!mapStore.showBridges">Show</span> <span v-show="mapStore.showBridges">Hide</span> Bridges </button>
+
+          <button class="bg-blue-500 mx-2 p-2 text-xs rounded-md" @click="mapStore.showClusters = !mapStore.showClusters"> <span v-show="!mapStore.showClusters">Show</span> <span v-show="mapStore.showClusters">Hide</span> Clusters </button>
         
-          <button @click="mapStore.showBridges = !mapStore.showBridges"> <span v-show="!mapStore.showBridges">Show</span> <span v-show="mapStore.showBridges">Hide</span> Bridges </button>
+          <button class="bg-blue-500 mx-2 p-2 text-xs rounded-md" @click="mapStore.showCounties = !mapStore.showCounties"> <span v-show="!mapStore.showCounties">Show</span> <span v-show="mapStore.showCounties">Hide</span> Counties </button>
 
-          <button @click="mapStore.showClusters = !mapStore.showClusters"> <span v-show="!mapStore.showClusters">Show</span> <span v-show="mapStore.showClusters">Hide</span> Clusters </button>
-        
-          <button @click="mapStore.showCounties = !mapStore.showCounties"> <span v-show="!mapStore.showCounties">Show</span> <span v-show="mapStore.showCounties">Hide</span> Counties </button>
+          <button class="bg-red-500 mx-2 p-2 text-xs rounded-md"@click="clearAllLayers(clear_draw=true)"> Clear Map </button>
 
-
-        </p>
+        </div>
 
       </div>
 
@@ -64,12 +68,9 @@
 
   import * as turf from "@turf/turf";
 
-  import { useMapStore } from "@/stores/mapstore"
+  import { useMapStore } from "@/stores/mapstore";
   
   const superblocksWrapper = ref(null)
-  const sbAPP = ref(null)
-
-
 
   const map_el = ref(null);
   const map_instance = ref(null);
@@ -81,9 +82,11 @@
 
   const search_container_el = ref(null);
 
-  const isVisible = ref(false)
-
   const bbox = ref([-94.769437,38.924986,-94.763933,38.927766])
+
+  const planBBOX = ref([])
+
+  const cluster_bbox = ref([])
 
   const drawPolygon = ref({})
 
@@ -151,7 +154,7 @@
 
             const state = e.features[0].properties.ste_name.replace("]","").replace("[","").slice(1,-1)
 
-            const msg = `<h2>${county} county, ${state}<h2>`
+            const msg = `<div class="bg-yellow-300 p-4 text-black"><h2>${county} county, ${state}<h2></div>`
             
             new mapboxgl.Popup()
                 .setLngLat(e.lngLat)
@@ -161,31 +164,6 @@
 
     })
 
-    map_instance.value.on('click',"polygons", (e) => {
-
-      const properties = e.features[0].properties
-
-      const size=properties.clusterSize
-
-      const id = properties.cluster
-
-      const bridges = properties.bridges.replace('[','').replace(']','').split(',')
-
-      let msg = `<h2>Group ${id}</h2><p>${size} Bridges<p><ul>`
-
-      for(let bridge of bridges){
-        msg += `<li>${bridge.slice(1,-1)}</li>`
-      }
-      msg += `</ul>`
-
-      new mapboxgl.Popup()
-                .setLngLat(e.lngLat)
-                .setHTML(msg)
-                .addTo(map_instance.value);
-
-    })
-   
-
     // register move and zoom events to persist map viewport
     map_instance.value.on('move', (e) => {
       storeViewport(map_instance.value.getCenter(), map_instance.value.getZoom())
@@ -193,8 +171,8 @@
 
     
 
-  sbAPP.value = createSuperblocksEmbed({
-        src: "https://app.superblocks.com/embed/applications/7246b0b7-e120-4d22-949a-71cca2a7ecba",
+  mapStore.sbAPP = createSuperblocksEmbed({
+        src: "https://app.superblocks.com/embed/applications/7472fe5c-cb1c-41c4-8026-bca71ddf467a",
         colorScheme: "dark",
         id: "sb-embed",
         onEvent: handleEvent,
@@ -202,14 +180,14 @@
         properties: { EmbedGeoPolygon: drawPolygon.value }
     });
     
-  superblocksWrapper.value.appendChild(sbAPP.value);
+  superblocksWrapper.value.appendChild(mapStore.sbAPP);
 
   });
 
   watch(drawPolygon,(newValue,oldValue)=>{
     //console.log('Old',oldValue)
     //console.log('New',newValue)
-    sbAPP.value.properties = {EmbedGeoPolygon:newValue}
+    mapStore.sbAPP.properties = {EmbedGeoPolygon:newValue}
   })
 
   onUnmounted(() => {
@@ -225,7 +203,7 @@
 
             bbox.value = turf.bbox(data)
 
-            console.log(data.features[0].geometry)
+            //console.log(data.features[0].geometry)
             drawPolygon.value = data.features[0].geometry
 
             // Restrict the area to 2 decimal points.
@@ -250,20 +228,20 @@
     });
   }
 
-  const resetView = () => {
+  const resetView = (view_bbox) => {
 
-    isVisible.value = false
+    mapStore.isVisible = false;
 
-    map_instance.value.fitBounds(bbox.value)
+    map_instance.value.fitBounds(view_bbox)
   }
 
   const handleEvent = (eventName, payload) => {
 
     switch(eventName){
 
-      case "buttonClicked":
+      case "bridgesReturned":
 
-        clearAllLayers()
+        clearLayer("bridges")
 
         map_instance.value.addSource("bridges", {
         type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
@@ -276,17 +254,27 @@
                 type: 'circle',
                 source: "bridges",
                 paint: {
-                    'circle-color': {
-                        type: 'identity',
-                        property: 'color',
-                    },
-                    'circle-radius': 6,
+                    'circle-color' : [
+                      'case',
+                      ['==', ['get', 'inCluster'], false], '#FFFF00',
+                      '#00FF00'
+                    ],
+                    'circle-radius': [
+                      'case',
+                      ['==', ['get', 'inCluster'], false], 4,
+                      6
+                    ],
                     'circle-stroke-color':"#000000",
                     'circle-stroke-width':1
                 }
           });
 
-          map_instance.value.addSource("clusters", {
+        break;
+      case "clustersReturned":
+        
+        clearLayer("clusters")
+
+        map_instance.value.addSource("clusters", {
         type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
         data: payload.clusters
 
@@ -294,74 +282,57 @@
 
         map_instance.value.addLayer({
                 id: "clusters",
-                type: 'circle',
+                type: 'fill',
                 source: "clusters",
                 paint: {
-                    'circle-color': {
-                        type: 'identity',
-                        property: 'color',
-                    },
-                    'circle-radius': 8,
-                    'circle-stroke-color':"#FFFFFF",
-                    'circle-stroke-width':1
+                    'fill-color' : [
+                      'case',
+                      ['==', ['get', 'saved'], true], '#FF0000',
+                      '#FFFF00'
+                    ],
+                    'fill-opacity': 0.5,
+                    'fill-outline-color': "#000000"
                 }
           });
 
-          map_instance.value.addSource("polygons", {
+        break;
+      
+      case "planPolygonReturned":
+        //add layer for the polygon of current macro plan
+        clearLayer("plan")
+
+        map_instance.value.addSource("plan", {
         type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
-        data: payload.polygons
+        data: payload.plan
 
             });
 
         map_instance.value.addLayer({
-                id: "polygons",
-                type: 'fill',
-                source: 'polygons',
-                paint: {
-                    'fill-color': {
-                        type: 'identity',
-                        property: 'color',
-                    },
-                    'fill-opacity': 0.4
-                }
-          });
+            id: "plan",
+            type: 'fill',
+            source: "plan",
+            paint: {
+                'fill-color' : "#87CEEB",
+                'fill-opacity': 0.3,
+                'fill-outline-color': "#000000"
+            }
+      });
+
+        planBBOX.value = turf.bbox(payload.plan.geometry)
+
+        resetView(planBBOX.value)
 
         break;
-      case "clusterSplit":
+      
+      case "zoomToCluster":
 
-        if (map_instance.value.getLayer("polygons2")) {
-          map_instance.value.removeLayer("polygons2");
-        }
+        cluster_bbox.value = turf.bbox(payload.polygon); 
+        
+        mapStore.isVisible = false;
 
-        if (map_instance.value.getSource("polygons2")) {
-          map_instance.value.removeSource("polygons2");
-        }
+        resetView(cluster_bbox.value);
 
-        map_instance.value.addSource("polygons2", {
-        type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
-        data: payload.polygons
 
-            });
-
-        map_instance.value.addLayer({
-                id: "polygons2",
-                type: 'fill',
-                source: 'polygons2',
-                paint: {
-                    'fill-color': '#FFFF00',
-                    'fill-opacity': 0.6
-                }
-          });
-
-        break;
-      case "rowClicked1":
-        isVisible.value = false
-        zoomToCoordinates(payload.coords[0],payload.coords[1])
-        break;
-      case "zoomBridge":
-        isVisible.value = false
-        zoomToCoordinates(payload.coords[0],payload.coords[1],18)
-        break;
       default:
         // default here 
 
@@ -386,7 +357,7 @@
       draw_instance.value.deleteAll()
     }
     
-    const layers = ["bridges","clusters","polygons"];
+    const layers = ["bridges","clusters","plan"];
 
     for(let layer of layers){
       clearLayer(layer);
@@ -419,12 +390,10 @@
 
 .dialogue {
   position: absolute;
-  top: 6px;
+  top: 0px;
   left: 0px;
   width: 100%;
-  height: 70px;
-  background: #624cdb;
-  color: #FFF;
+  height: 60px;
 }
 
 .map-right-sidebar {
@@ -442,21 +411,15 @@
         position: absolute;
         bottom: 10px;
         left: 10px;
-        background-color: rgba(240, 172, 47, 0.9);
-        padding: 16px;
+        background-color: rgba(240, 228, 67, 0.9);
+        padding: 0px;
         text-align: center;
 }
 
 p {
         font-family: 'Open Sans';
         margin: 0;
-        font-size: 24px;
-}
-
-button {
-        font-family: 'Open Sans';
-        margin: 0;
-        font-size: 18px;
+        font-size: 32px;
 }
 
 </style>
