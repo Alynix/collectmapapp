@@ -60,11 +60,7 @@ onUnmounted(() => {
 
 })
 
-const showApp = () => {
-    mapStore.isVisible = true;
-}
-
-const triggerModelOpen = (cluster_id) => {
+const triggerModalOpen = (cluster_id) => {
     
     mapStore.isVisible = true;
     mapStore.sbAPP.trigger('openClusterModal', {"cluster_id":String(cluster_id)}) 
@@ -99,7 +95,7 @@ const checkSaved = (properties) => {
 
                 <span>
                     <button v-if="checkSaved(selectedCluster.properties)" class="bg-green-500 mx-2 p-2 text-xs rounded-md">
-                        <span @click="triggerModelOpen(selectedCluster.id)">View Details</span>
+                        <span @click="triggerModalOpen(selectedCluster.id)">View Details</span>
                     </button>
                 </span>
 
