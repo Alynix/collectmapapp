@@ -8,6 +8,10 @@
           <slot name="right-sidebar"></slot>
       </div>
 
+      <div class="map-left-sidebar">
+          <slot name="left-sidebar"></slot>
+      </div>
+
       <div ref="map_el" class="map"></div>
 
       
@@ -402,6 +406,15 @@
   right: 50px;
   width: 330px;
   max-width: 500px;
+  z-index: 200;
+}
+
+.map-left-sidebar {
+  position: absolute;
+  top: 140px;
+  left: 10px;
+  width: 500px;
+  max-width: 700px;
   z-index: 200;
 }
 

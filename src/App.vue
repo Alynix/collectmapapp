@@ -3,6 +3,8 @@ import { RouterLink, RouterView } from 'vue-router'
 
 import MyMap from './components/map/Map.vue'
 
+import MacroPlansListPane from './components/map/MacroPlansListPane.vue'
+
 import DrawLayer from './components/map/DrawLayer.vue'
 
 import BridgesLayer from './components/map/BridgesLayer.vue'
@@ -20,6 +22,9 @@ const mapStore=useMapStore();
 <template>
    <main>
     <MyMap>
+      <template #left-sidebar>
+        <MacroPlansListPane/>
+      </template>
   
     </MyMap>
 
