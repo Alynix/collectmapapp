@@ -15,6 +15,7 @@
     "@superblocksteam/embed": "^1.2.0",
     "@turf/turf": "^7.2.0",
     "@vueuse/core": "^12.5.0",
+    "axios": "^1.7.9",
     "mapbox-gl": "^3.9.3",
     "pinia": "^2.3.1",
     "vue": "^3.5.13",

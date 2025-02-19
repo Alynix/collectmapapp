@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { ref, markRaw } from "vue";
 import { useLocalStorage } from "@vueuse/core"
+import deckerAPI  from "@/api/DeckerAPI"
 
 export const useMapStore = defineStore("mapstore",() => {
 
@@ -27,6 +28,21 @@ export const useMapStore = defineStore("mapstore",() => {
 
     const sbAPP = ref(null) // Superblocks app instance
 
-    return { mapbox_instance,map_mounted,mapCenter,mapZoom,showBridges,showClusters,showDraw,showCounties,calcArea,mapboxdraw_instance,draw_data,isVisible,sbAPP }
+    const macroPlans = ref([])
+
+    const fetchMacroPlans = async () => {
+        let response = await deckerAPI.get_macroplans();
+        macroPlans.value = response.data.features.map((feature) => {
+            const row = feature.properties;
+
+            return {
+                id: row.id,
+                name: row.name,
+                description: row.description,
+            }
+        });
+    }
+
+    return { macroPlans,fetchMacroPlans,mapbox_instance,map_mounted,mapCenter,mapZoom,showBridges,showClusters,showDraw,showCounties,calcArea,mapboxdraw_instance,draw_data,isVisible,sbAPP }
 
 });
