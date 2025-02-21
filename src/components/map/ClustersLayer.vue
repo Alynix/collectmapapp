@@ -74,6 +74,13 @@ const checkSaved = (properties) => {
     return false
 }
 
+const deleteCluster = (cluster_id) => {
+
+    mapStore.isVisible = true;
+
+    mapStore.sbAPP.trigger('clusterDeleteButton', {"cluster_id":String(cluster_id)}) 
+}
+
 </script>
 
 <template>
@@ -82,6 +89,10 @@ const checkSaved = (properties) => {
             <span class="text-lg font-bold">Cluster id: {{selectedCluster.id}}</span>
             <div class="grid grid-cols-3 py-3">
                 <div>
+                    <div>{{selectedCluster.properties['macro_plan']}}</div>
+                    <div class="text-gray-400"> Macro Plan </div>
+                </div>
+                <div>
                     <div>{{selectedCluster.properties['clusterSize']}}</div>
                     <div class="text-gray-400"> Bridge Count </div>
                 </div>
@@ -89,18 +100,17 @@ const checkSaved = (properties) => {
                     <div>{{selectedCluster.properties['bridges']}}</div>
                     <div class="text-gray-400"> Bridges</div>
                 </div>
-                <div>
-                    
-                </div>
 
-                <span>
+            </div>
+
+            <span>
                     <button v-if="checkSaved(selectedCluster.properties)" class="bg-green-500 mx-2 p-2 text-xs rounded-md">
                         <span @click="triggerModalOpen(selectedCluster.id)">View Details</span>
                     </button>
-                </span>
-
-
-            </div>
+                    <button v-if="checkSaved(selectedCluster.properties)" class="bg-red-500 mx-2 p-2 text-xs rounded-md">
+                        <span @click="deleteCluster(selectedCluster.id)">Delete Cluster</span>
+                    </button>
+            </span>
 
             
 
