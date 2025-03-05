@@ -45,7 +45,7 @@
           <div class="stat">
             <div class="stat-title">Total Planned Collects</div>
             <div class="stat-value">{{ numClusters }}</div>
-            <div class="stat-desc">( ? bridges)</div>
+            <div class="stat-desc">( {{ numBridges }} bridges)</div>
           </div>
 
           <div class="stat">
@@ -206,6 +206,8 @@
   const allScheduleDates = ref([]); // Array to store hypothetical date/system pairs
   
   const numClusters = ref(0); // Number of clusters
+
+  const numBridges = ref(0); // Number of bridges
 
   const collectEfficiency = ref(0.5); // Efficiency of collection
 
@@ -452,6 +454,14 @@
         clearLayer("clusters")
 
         numClusters.value = payload.clusters.features.length
+
+        let bridge_count = 0;
+        //loop clusters to count all bridges
+        payload.clusters.features.forEach((cluster) => {
+          bridge_count += cluster.properties.bridges.length
+        })
+        
+        numBridges.value = bridge_count;
 
         map_instance.value.addSource("clusters", {
         type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
