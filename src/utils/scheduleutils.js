@@ -64,9 +64,11 @@ export function calculatePlanCost(totalPlanDays, laborHourlyCost, numClusters, s
 
     costPerDay += (systemBaseCost * numberSystems / totalPlanDays)
 
-    costPerDay = Math.round(costPerDay);
-    const planCost = Math.round(totalPlanDays * costPerDay);
-    const costPerBridge = Math.round(planCost / numBridges);
+    const zeroCost = (totalPlanDays==0) || (numClusters==0) || (numberSystems==0) || (numBridges==0);
+
+    costPerDay = !zeroCost ? Math.round(costPerDay) : 0;
+    const planCost = !zeroCost ? Math.round(totalPlanDays * costPerDay) : 0;
+    const costPerBridge = !zeroCost ? Math.round(planCost / numBridges) : 0;
 
     return [planCost, costPerDay, costPerBridge, totalMonthsLeased ];
 }
