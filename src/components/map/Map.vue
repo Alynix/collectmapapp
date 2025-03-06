@@ -260,6 +260,60 @@
 
   const showSchedule = ref(true);
 
+  // measuring tool 
+
+  // GeoJSON object to hold our measurement features
+  const geojson = ref({
+        'type': 'FeatureCollection',
+        'features': []
+    });
+
+  // Used to draw a line between points
+  const linestring = ref({
+      'type': 'Feature',
+      'geometry': {
+          'type': 'LineString',
+          'coordinates': []
+      }
+  });
+
+  const createMeasureLayers = () => {
+
+        map_instance.value.addSource('geojson', {
+            'type': 'geojson',
+            'data': geojson.value
+        });
+
+        // Add styles to the map
+        map_instance.value.addLayer({
+            id: 'measure-points',
+            type: 'circle',
+            source: 'geojson',
+            paint: {
+                'circle-radius': 5,
+                'circle-color': '#000'
+            },
+            filter: ['in', '$type', 'Point']
+        });
+        map_instance.value.addLayer({
+            id: 'measure-lines',
+            type: 'line',
+            source: 'geojson',
+            layout: {
+                'line-cap': 'round',
+                'line-join': 'round'
+            },
+            paint: {
+                'line-color': '#000',
+                'line-width': 2.5
+            },
+            filter: ['in', '$type', 'LineString']
+        });
+
+  }
+
+
+
   onMounted(() => {
     
     map_instance.value = new mapboxgl.Map({
@@ -299,6 +353,8 @@
     mapStore.mapbox_instance.on("load",() => {
       mapStore.map_mounted = true;
 
+      createMeasureLayers()
+
       map_instance.value.addSource("counties", {
         type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
         data: 'https://decker-public-hosting.s3.us-east-2.amazonaws.com/georef-united-states-of-america-county.geojson'
@@ -330,12 +386,77 @@
                 .addTo(map_instance.value);
         });
 
+        map_instance.value.on('click', (e) => {
+            const features = map_instance.value.queryRenderedFeatures(e.point, {
+                layers: ['measure-points']
+            });
+
+            // Remove the linestring from the group
+            // so we can redraw it based on the points collection.
+            if (geojson.value.features.length > 1) geojson.value.features.pop();
+
+            // Clear the distance container to populate it with a new value.
+            //distanceContainer.innerHTML = '';
+
+            // If a feature was clicked, remove it from the map.
+            if (features.length) {
+                const id = features[0].properties.id;
+                geojson.value.features = geojson.features.filter(
+                    (point) => point.properties.id !== id
+                );
+            } else {
+                const point = {
+                    'type': 'Feature',
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [e.lngLat.lng, e.lngLat.lat]
+                    },
+                    'properties': {
+                        'id': String(new Date().getTime())
+                    }
+                };
+
+                geojson.value.features.push(point);
+            }
+
+            if (geojson.value.features.length > 1) {
+                linestring.value.geometry.coordinates = geojson.value.features.map(
+                    (point) => point.geometry.coordinates
+                );
+
+                geojson.value.features.push(linestring.value);
+
+                // Populate the distanceContainer with total distance
+                //const value = document.createElement('pre');
+                const distance = turf.length(linestring.value);
+
+                console.log(distance)
+
+                //value.textContent = `Total distance: ${distance.toLocaleString()}km`;
+                //distanceContainer.appendChild(value);
+            }
+
+            map_instance.value.getSource('geojson').setData(geojson.value);
+        });
+        
+
     })
 
     // register move and zoom events to persist map viewport
     map_instance.value.on('move', (e) => {
       storeViewport(map_instance.value.getCenter(), map_instance.value.getZoom())
     })
+
+    map_instance.value.on('mousemove', (e) => {
+        const features = map_instance.value.queryRenderedFeatures(e.point, {
+            layers: ['measure-points']
+        });
+        // Change the cursor to a pointer when hovering over a point on the map.
+        // Otherwise cursor is a crosshair.
+        map_instance.value.getCanvas().style.cursor = features.length
+            ? 'pointer'
+            : 'crosshair';
+    });
 
     
 
