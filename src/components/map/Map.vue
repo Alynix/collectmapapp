@@ -11,6 +11,8 @@
 
         </div>
         <div class="flex gap-2">
+
+          <button :class="['btn', showSchedule ? 'btn-warning' : 'btn-success','btn-xs']" @click="showSchedule = !showSchedule"> <span v-show="!showSchedule">Show</span> <span v-show="showSchedule">Hide</span> Esimator </button>
           
           <button :class="['btn', mapStore.showBridges ? 'btn-warning' : 'btn-success','btn-xs']" @click="mapStore.showBridges = !mapStore.showBridges"> <span v-show="!mapStore.showBridges">Show</span> <span v-show="mapStore.showBridges">Hide</span> Bridges </button>
 
@@ -30,16 +32,15 @@
       
       <div class="divider"></div>
 
-        <div class="flex w-full flex-col" v-show="!mapStore.isVisible">
+        <div class="flex w-full flex-col" v-show="!mapStore.isVisible && showSchedule">
           
-
           
 
         <div class="stats stats-vertical shadow">
           <div class="stat">
             <div class="stat-title">Duration</div>
             <div class="stat-value">{{ totalPlanDays }} days</div>
-            <div class="stat-desc">{{planStartDate}} - {{planEndDate}}</div>
+            <div class="stat-desc">{{planStartDate}} - {{planEndDate}} {{ totalMonthsLeased }} Months Leased</div>
           </div>
 
           <div class="stat">
@@ -52,13 +53,27 @@
             <div class="stat-title">Cost</div>
             <div class="stat-value">{{ planCost }}$</div>
             <div class="stat-desc"> cost per day: {{ costPerDay }} $</div>
+            <div class="stat-desc"> cost per bridge: {{ costPerBridge }} $</div>
           </div>
         </div>
 
         <div class="divider"></div>
 
+        <div class="card bg-base-100 w-full">
+          <div class="card-body">
+            <h2 class="card-title">Scheduling Controls</h2>
+
         <div class="join join-vertical">
-          <input type="date" class="input" v-model="planStartDate"/>
+          <div class="join join-horizontal">
+            <label class="label bg-base-100">
+              <span class="label-text">Start Date - </span>
+            </label>
+            <input type="date" class="input text-center" v-model="planStartDate"/>
+          </div>
+          
+          <label class="label bg-base-100">
+              <span class="label-text">Excluded Months - </span>
+          </label>
           <div class="dropdown text-xs">
             <div tabindex="0" role="button" class="btn btn-warning btn-xs ">
               {{ selectedOptions() }}
@@ -73,27 +88,42 @@
             </ul>
           </div>
           <div class="flex items-center gap-2 w-auto">
-            <label class="label bg-base-100">
-              <span class="label-text">Available Docks</span>
+            <label class="floating-label bg-base-100">
+              <span class="label-text">Available Docks - </span>
             </label>
             <input 
               type="number" 
               v-model="numberSystems" 
               min="1" 
               max="10" 
-              class="input input-bordered w-auto text-center"
+              class="input input-bordered w-auto text-center btn-sm"
             />
           </div>
+          <div class="flex items-center gap-2 w-auto">
+            <label class="floating-label bg-base-100">
+              <span class="label-text">Hourly Labor Cost -  </span>
+            </label>
+            <input 
+              type="number" 
+              v-model="laborHourlyCost" 
+              min="10" 
+              max="1000" 
+              class="input input-bordered w-auto text-center btn-sm"
+            ><span class="unit bg-base-100">$</span></input>
+          </div>
           <div class="w-full max-w-xs">
-            <input type="range" min="0.2" max="1" class="range" step="0.05" v-model="collectEfficiency"/>
-            <div class="flex justify-between px-2.5 mt-2 text-xs bg-base-100">
+            <label class="floating-label center bg-base-100">
+              <span class="label-text">Efficiency Modifier - </span>
+            </label>
+            <input type="range" min="0.2" max="1" class="range bg-base-100 btn-xs" step="0.05" v-model="collectEfficiency"/>
+            <div class="flex justify-between px-2.5 mt-0 text-xs bg-base-100">
               <span>|</span>
               <span>|</span>
               <span>|</span>
               <span>|</span>
               <span>|</span>
             </div>
-            <div class="flex justify-between px-2.5 mt-2 text-xs bg-base-100">
+            <div class="flex justify-between px-2.0 mt-0 text-xs bg-base-100">
               <span>20%</span>
               <span>40%</span>
               <span>60%</span>
@@ -101,6 +131,9 @@
               <span>100%</span>
             </div>
           </div>
+        </div>
+
+        </div>
         </div>
 
       </div>
@@ -137,7 +170,7 @@
 
   import { createSuperblocksEmbed } from '@superblocksteam/embed';
 
-  import { getValidCollectionDays,computeDays } from "@/utils/scheduleutils";
+  import { getValidCollectionDays,computeDays,calculatePlanCost } from "@/utils/scheduleutils";
 
   
   import 'mapbox-gl/dist/mapbox-gl.css';
@@ -196,28 +229,36 @@
 
   const today = new Date(); // default planStartDate to today's date
   const planStartDate = ref(today.toISOString().split('T')[0]);
-
   const planEndDate = ref(today.toISOString().split('T')[0]);
 
   const numberSystems = ref(2); // Default value
 
   const allValidDates = ref([]); // Array to store all valid collection days
-
   const allScheduleDates = ref([]); // Array to store hypothetical date/system pairs
   
   const numClusters = ref(0); // Number of clusters
-
   const numBridges = ref(0); // Number of bridges
 
   const collectEfficiency = ref(0.5); // Efficiency of collection
 
   const totalPlanDays = ref(0); // Total number of days for the plan
 
+  const totalMonthsLeased = ref(0);
+
   const tooManyClusters = ref(false);
 
   const planCost = ref(0); // Total cost of the plan in dollars
 
-  const costPerDay = ref(500); // Cost per day in dollars
+  const costPerDay = ref(0); // Cost per day in dollars
+
+  const costPerBridge = ref(0); // Cost per bridge in dollars
+
+  const laborHourlyCost = ref(50); // Hourly labor cost in dollars
+
+  const systemBaseCost = ref(6000); // Base cost of a collection system
+  const systemMonthlyCost = ref(6000); // Monthly cost of a collection system
+
+  const showSchedule = ref(true);
 
   onMounted(() => {
     
@@ -365,8 +406,27 @@
 
   })
 
+  // Simple Cost Approximation for now
   watch(totalPlanDays,(newValue,oldValue)=>{
-    planCost.value = newValue * costPerDay.value
+
+    const [Cost,perDay,PerBridge,Months] = calculatePlanCost(newValue, laborHourlyCost.value, numClusters.value, systemMonthlyCost.value, numberSystems.value, systemBaseCost.value, numBridges.value)
+
+    planCost.value = Cost;
+    costPerDay.value = perDay;
+    costPerBridge.value = PerBridge;
+    totalMonthsLeased.value = Months;
+
+  })
+
+  watch(laborHourlyCost,(newValue,oldValue)=>{
+
+    const [Cost,perDay,PerBridge,Months] = calculatePlanCost(totalPlanDays.value, newValue, numClusters.value, systemMonthlyCost.value, numberSystems.value, systemBaseCost.value, numBridges.value)
+
+    planCost.value = Cost;
+    costPerDay.value = perDay;
+    costPerBridge.value = PerBridge;
+    totalMonthsLeased.value = Months;
+
   })
 
   onUnmounted(() => {

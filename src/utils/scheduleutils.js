@@ -33,12 +33,6 @@ export function computeDays(numCollections, numDevices, validDays, startDate, ef
     let schedule = [];
     let index = 0;
 
-    console.log(numCollections);
-    console.log(numDevices);
-    //console.log(validDays);
-    console.log(startDate);
-    console.log(efficiencyModifier);
-
     for (let date of validDays) {
         for (let systemNumber = 1; systemNumber <= numDevices; systemNumber++) {
             if (Math.random() > efficiencyModifier) {
@@ -58,7 +52,21 @@ export function computeDays(numCollections, numDevices, validDays, startDate, ef
     let totalDays = lastCollectionDate ? (new Date(lastCollectionDate) - new Date(startDate)) / (1000 * 60 * 60 * 24) + 1 : 0;
     let totalCollects = schedule.length;
 
-    console.log(totalDays);
-
     return [totalDays, lastCollectionDate, totalCollects < numCollections, schedule];
+}
+
+export function calculatePlanCost(totalPlanDays, laborHourlyCost, numClusters, systemMonthlyCost, numberSystems, systemBaseCost, numBridges) {
+    const totalMonthsLeased = Math.floor(totalPlanDays / 30) + 1; // add 1 month for the first month
+
+    let costPerDay = (laborHourlyCost * 12 * numClusters / totalPlanDays)
+
+    costPerDay += (systemMonthlyCost * totalMonthsLeased * numberSystems / totalPlanDays)
+
+    costPerDay += (systemBaseCost * numberSystems / totalPlanDays)
+
+    costPerDay = Math.round(costPerDay);
+    const planCost = Math.round(totalPlanDays * costPerDay);
+    const costPerBridge = Math.round(planCost / numBridges);
+
+    return [planCost, costPerDay, costPerBridge, totalMonthsLeased ];
 }
