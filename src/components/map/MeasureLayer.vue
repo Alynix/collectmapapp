@@ -76,20 +76,6 @@ onMounted(()=>{
         filter: ['in', '$type', 'LineString']
     });
 
-    // Handle point click (start dragging)
-    map_instance.on('mousedown', 'measure-points', (e) => {
-        e.preventDefault();
-        isDragging.value = true;
-        console.log("Dragging");
-        draggedPointId.value = e.features[0].properties.id;
-    });
-
-    map_instance.on('click', 'measure-points', (e) => {
-        console.log("Clicked on a point!", e.features[0]);
-    });
-
-
-
     map_instance.on('click', async (e) => {
 
         if (mapStore.showMeasure == false){
