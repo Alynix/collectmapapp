@@ -12,6 +12,8 @@
         </div>
         <div class="flex gap-2">
 
+          <button :class="['btn', mapStore.showMeasure ? 'btn-warning' : 'btn-error','btn-xs']" @click="mapStore.showMeasure = !mapStore.showMeasure"> <span v-show="!mapStore.showMeasure">Show</span> <span v-show="mapStore.showMeasure">Hide</span> Measure Tool </button>
+
           <button :class="['btn', showSchedule ? 'btn-warning' : 'btn-success','btn-xs']" @click="showSchedule = !showSchedule"> <span v-show="!showSchedule">Show</span> <span v-show="showSchedule">Hide</span> Esimator </button>
           
           <button :class="['btn', mapStore.showBridges ? 'btn-warning' : 'btn-success','btn-xs']" @click="mapStore.showBridges = !mapStore.showBridges"> <span v-show="!mapStore.showBridges">Show</span> <span v-show="mapStore.showBridges">Hide</span> Bridges </button>
@@ -260,6 +262,9 @@
 
   const showSchedule = ref(true);
 
+  
+
+
   onMounted(() => {
     
     map_instance.value = new mapboxgl.Map({
@@ -336,6 +341,8 @@
     map_instance.value.on('move', (e) => {
       storeViewport(map_instance.value.getCenter(), map_instance.value.getZoom())
     })
+
+    
 
     
 
