@@ -17,8 +17,7 @@ const unit = ref('m');
 
 const popup = ref(null);
 
-const isDragging = ref(false);
-const draggedPointId = ref(null);
+
 
 onMounted(()=>{
     let map_instance = mapStore.mapbox_instance
@@ -93,8 +92,6 @@ onMounted(()=>{
 
     map_instance.on('click', async (e) => {
 
-        if (isDragging.value) return; // Prevent new points from being added while dragging
-
         const features = map_instance.queryRenderedFeatures(e.point, {
             layers: ['measure-points']
         });
@@ -166,41 +163,6 @@ onMounted(()=>{
         map_instance.getSource('geojson').setData(geojson.value);
     });
 
-    
-
-    // Handle dragging
-    map_instance.on('mousemove', (e) => {
-        if (!isDragging.value || !draggedPointId.value) return;
-
-        // Update the dragged point’s coordinates
-        geojson.value.features = geojson.value.features.map(point => {
-            if (point.properties.id === draggedPointId.value) {
-                point.geometry.coordinates = [e.lngLat.lng, e.lngLat.lat];
-            }
-            return point;
-        });
-
-        // Update line if there are two points
-        if (geojson.value.features.length > 1) {
-            linestring.value.geometry.coordinates = geojson.value.features.map(
-                (point) => point.geometry.coordinates
-            );
-        }
-
-        map_instance.getSource('geojson').setData(geojson.value);
-    });
-
-    // Handle mouse release (stop dragging)
-    map_instance.on('mouseup', () => {
-        isDragging.value = false;
-        draggedPointId.value = null;
-    });
-
-
-
-   
-
-    
 
 
 })
