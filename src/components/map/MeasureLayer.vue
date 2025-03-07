@@ -92,6 +92,10 @@ onMounted(()=>{
 
     map_instance.on('click', async (e) => {
 
+        if (mapStore.showMeasure == false){
+            return
+        }
+
         const features = map_instance.queryRenderedFeatures(e.point, {
             layers: ['measure-points']
         });
@@ -141,7 +145,7 @@ onMounted(()=>{
             //const value = document.createElement('pre');
             distance.value = turf.length(linestring.value) * 1000; // convert to meters
 
-            distance.value = Math.round(distance.value * 100) / 100; // round to 2 decimal places
+            distance.value = Math.round(distance.value);
 
             // Need the dom update cycle to complete 
             // so that the popup is mounted and rendered
@@ -172,15 +176,15 @@ watch(useMeters,(newVal,oldVal)=>{
 
     if (newVal){
 
-        // convert feet to meters, round to 2 decimal places
+        // convert feet to meters
         unit.value = 'm';
-        distance.value = Math.round(distance.value / 3.28084 * 100) / 100
+        distance.value = Math.round(distance.value / 3.28084 * 1) / 1
 
     } else {
 
-        // convert meters to feet, round to 2 decimal places
+        // convert meters to feet
         unit.value = 'ft';
-        distance.value = Math.round(distance.value * 3.28084 * 100) / 100
+        distance.value = Math.round(distance.value * 3.28084 * 1) / 1
     }
 
 });
@@ -217,8 +221,8 @@ onUnmounted(()=>{
 <template>
     <div class="popup-content" v-if="distance>0" ref="popupContent">
         <div class="p-3 w-auto bg-gray-900 text-white">
-            <button class="btn btn-error btn-xs text-xs" @click="useMeters = !useMeters">
-                <span class="text-lg font-bold">{{ distance }} {{ unit }}</span>
+            <button class="btn btn-error btn-xs" @click="useMeters = !useMeters">
+                <span class="text-xs">{{ distance }} {{ unit }}</span>
             </button> 
         </div>
     </div>
