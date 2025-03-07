@@ -17,19 +17,8 @@ const unit = ref('m');
 
 const popup = ref(null);
 
-
-
-onMounted(()=>{
-    let map_instance = mapStore.mapbox_instance
-
-    mapStore.showDraw = false
-
-    console.log("Measure Layer Mounted ")
-
-    // measuring tool 
-
-    // GeoJSON object to hold our measurement features
-    const geojson = ref({
+// GeoJSON object to hold our measurement features
+const geojson = ref({
             'type': 'FeatureCollection',
             'features': []
         });
@@ -43,6 +32,95 @@ onMounted(()=>{
         }
     });
 
+const clickCallback = async (e) => {
+
+    console.log('Clicked on map');
+
+    const features = mapStore.mapbox_instance.queryRenderedFeatures(e.point, {
+        layers: ['measure-points']
+    });
+
+    // Remove the linestring from the group
+    // so we can redraw it based on the points collection.
+    if (geojson.value.features.length > 1) geojson.value.features.pop();
+
+    // Clear the distance container to populate it with a new value.
+    //distanceContainer.innerHTML = '';
+
+    // If a feature was clicked, remove it from the map.
+    if (features.length) {
+        const id = features[0].properties.id;
+        geojson.value.features = geojson.value.features.filter(
+            (point) => point.properties.id !== id
+        );
+    } else {
+        const point = {
+            'type': 'Feature',
+            'geometry': {
+                'type': 'Point',
+                'coordinates': [e.lngLat.lng, e.lngLat.lat]
+            },
+            'properties': {
+                'id': String(new Date().getTime())
+            }
+        };
+
+        
+        
+        geojson.value.features.push(point);
+
+        if(geojson.value.features.length > 2){
+            geojson.value.features.shift();
+        }
+    }
+
+    if (geojson.value.features.length > 1) {
+        linestring.value.geometry.coordinates = geojson.value.features.map(
+            (point) => point.geometry.coordinates
+        );
+
+        geojson.value.features.push(linestring.value);
+
+        // Populate the distanceContainer with total distance
+        //const value = document.createElement('pre');
+        distance.value = turf.length(linestring.value) * 1000; // convert to meters
+
+        distance.value = Math.round(distance.value);
+
+        // Need the dom update cycle to complete 
+        // so that the popup is mounted and rendered
+        await nextTick();
+
+        popup.value = new mapboxgl.Popup({anchor: 'bottom-right'})
+        .setLngLat(e.lngLat)
+        .setDOMContent(
+            popupContent.value
+        )
+        .addTo(mapStore.mapbox_instance);
+
+        //value.textContent = `Total distance: ${distance.toLocaleString()}km`;
+        //distanceContainer.appendChild(value);
+    }
+
+
+
+    mapStore.mapbox_instance.getSource('geojson').setData(geojson.value);
+}
+
+
+
+
+
+onMounted(()=>{
+    let map_instance = mapStore.mapbox_instance
+
+    mapStore.showDraw = false
+
+    console.log("Measure Layer Mounted ")
+
+    // measuring tool 
+
+    
    
 
     map_instance.addSource('geojson', {
@@ -76,82 +154,7 @@ onMounted(()=>{
         filter: ['in', '$type', 'LineString']
     });
 
-    map_instance.on('click', async (e) => {
-
-        if (mapStore.showMeasure == false){
-            return
-        }
-
-        const features = map_instance.queryRenderedFeatures(e.point, {
-            layers: ['measure-points']
-        });
-
-        // Remove the linestring from the group
-        // so we can redraw it based on the points collection.
-        if (geojson.value.features.length > 1) geojson.value.features.pop();
-
-        // Clear the distance container to populate it with a new value.
-        //distanceContainer.innerHTML = '';
-
-        // If a feature was clicked, remove it from the map.
-        if (features.length) {
-            const id = features[0].properties.id;
-            geojson.value.features = geojson.value.features.filter(
-                (point) => point.properties.id !== id
-            );
-        } else {
-            const point = {
-                'type': 'Feature',
-                'geometry': {
-                    'type': 'Point',
-                    'coordinates': [e.lngLat.lng, e.lngLat.lat]
-                },
-                'properties': {
-                    'id': String(new Date().getTime())
-                }
-            };
-
-            
-            
-            geojson.value.features.push(point);
-
-            if(geojson.value.features.length > 2){
-                geojson.value.features.shift();
-            }
-        }
-
-        if (geojson.value.features.length > 1) {
-            linestring.value.geometry.coordinates = geojson.value.features.map(
-                (point) => point.geometry.coordinates
-            );
-
-            geojson.value.features.push(linestring.value);
-
-            // Populate the distanceContainer with total distance
-            //const value = document.createElement('pre');
-            distance.value = turf.length(linestring.value) * 1000; // convert to meters
-
-            distance.value = Math.round(distance.value);
-
-            // Need the dom update cycle to complete 
-            // so that the popup is mounted and rendered
-            await nextTick();
-
-            popup.value = new mapboxgl.Popup({anchor: 'bottom-right'})
-            .setLngLat(e.lngLat)
-            .setDOMContent(
-                popupContent.value
-            )
-            .addTo(map_instance);
-
-            //value.textContent = `Total distance: ${distance.toLocaleString()}km`;
-            //distanceContainer.appendChild(value);
-        }
-
-        
-
-        map_instance.getSource('geojson').setData(geojson.value);
-    });
+    map_instance.on('click',clickCallback);
 
 
 
@@ -179,6 +182,8 @@ onUnmounted(()=>{
     let map_instance = mapStore.mapbox_instance
 
     console.log("Measure Layer Unmounted ")
+
+    map_instance.off('click', clickCallback);
 
     if (popup.value) {
         popup.value.remove();

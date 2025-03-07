@@ -89,6 +89,14 @@
               </li>
             </ul>
           </div>
+          <div>
+          <fieldset class="fieldset p-2 bg-base-100 w-auto">
+            <label class="fieldset-label text-xs">
+              <input type="checkbox" checked="checked" class="checkbox" v-model="excludeWeekends"/>
+               Exclude Weekends
+            </label>
+          </fieldset>
+          </div>
           <div class="flex items-center gap-2 w-auto">
             <label class="floating-label bg-base-100">
               <span class="label-text">Available Docks - </span>
@@ -227,6 +235,10 @@
     return options.value.filter((opt) => opt.selected).map((opt) => opt.name).join(", ") || "Select options";
   };
 
+  const selectedOptionsIds = () => {
+    return options.value.filter((opt) => opt.selected).map((opt) => opt.id);
+  };
+
   //variables for the scheduling calculations
 
   const today = new Date(); // default planStartDate to today's date
@@ -261,6 +273,10 @@
   const systemMonthlyCost = ref(4000); // Monthly cost of a collection system
 
   const showSchedule = ref(true);
+
+  const excludeWeekends = ref(true);
+
+  const maxMonths = ref(36);
 
   
 
@@ -366,7 +382,9 @@
   })
 
   watch(planStartDate,(newValue,oldValue)=>{
-    allValidDates.value = getValidCollectionDays(newValue)
+
+    const excludedDays = excludeWeekends.value ? [6, 7] : [];
+    allValidDates.value = getValidCollectionDays(newValue, excludedDays, selectedOptionsIds(),maxMonths.value);
 
     const [totalDays, endDate, tooMany, scheduleDates] = computeDays(numClusters.value,numberSystems.value,allValidDates.value,newValue,collectEfficiency.value)
 
@@ -378,7 +396,9 @@
   })
 
   watch(numClusters,(newValue,oldValue)=>{
-    allValidDates.value = getValidCollectionDays(planStartDate.value)
+
+    const excludedDays = excludeWeekends.value ? [6, 7] : [];
+    allValidDates.value = getValidCollectionDays(planStartDate.value, excludedDays, selectedOptionsIds(),maxMonths.value);
 
     const [totalDays, endDate, tooMany, scheduleDates] = computeDays(newValue,numberSystems.value,allValidDates.value,planStartDate.value,collectEfficiency.value)
 
@@ -390,7 +410,9 @@
   })
 
   watch(numberSystems,(newValue,oldValue)=>{
-    allValidDates.value = getValidCollectionDays(planStartDate.value)
+
+    const excludedDays = excludeWeekends.value ? [6, 7] : [];
+    allValidDates.value = getValidCollectionDays(planStartDate.value, excludedDays, selectedOptionsIds(),maxMonths.value);
 
     const [totalDays, endDate, tooMany, scheduleDates] = computeDays(numClusters.value,newValue,allValidDates.value,planStartDate.value,collectEfficiency.value)
 
@@ -402,9 +424,25 @@
   })
 
   watch(collectEfficiency,(newValue,oldValue)=>{
-    allValidDates.value = getValidCollectionDays(planStartDate.value)
+    
+    const excludedDays = excludeWeekends.value ? [6, 7] : [];
+    allValidDates.value = getValidCollectionDays(planStartDate.value, excludedDays, selectedOptionsIds(),maxMonths.value);
 
     const [totalDays, endDate, tooMany, scheduleDates] = computeDays(numClusters.value,numberSystems.value,allValidDates.value,planStartDate.value,newValue)
+
+    totalPlanDays.value = totalDays
+    planEndDate.value = endDate
+    tooManyClusters.value = tooMany
+    allScheduleDates.value = scheduleDates
+
+  })
+
+  watch(excludeWeekends,(newValue,oldValue)=>{
+    
+    const excludedDays = excludeWeekends.value ? [6, 7] : [];
+    allValidDates.value = getValidCollectionDays(planStartDate.value, excludedDays, selectedOptionsIds(),maxMonths.value);
+
+    const [totalDays, endDate, tooMany, scheduleDates] = computeDays(numClusters.value,numberSystems.value,allValidDates.value,planStartDate.value,collectEfficiency.value)
 
     totalPlanDays.value = totalDays
     planEndDate.value = endDate

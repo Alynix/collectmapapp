@@ -1,10 +1,8 @@
 // functions to calculate hypothetical collection schedules
 
 
-export function getValidCollectionDays(startDate, 
-    excludedMonths = [11, 12, 1, 2], 
-    maxProjectDuration = 36, 
-    excludedDays = [6, 7]) {
+export function getValidCollectionDays(startDate, excludedDays, excludedMonths, maxProjectDuration) {
+    
     let start = new Date(startDate);
     let end = new Date(start);
     end.setDate(start.getDate() + maxProjectDuration * 30);
@@ -49,7 +47,7 @@ export function computeDays(numCollections, numDevices, validDays, startDate, ef
     }
 
     let lastCollectionDate = schedule.length > 0 ? schedule[schedule.length - 1][0] : null;
-    let totalDays = lastCollectionDate ? (new Date(lastCollectionDate) - new Date(startDate)) / (1000 * 60 * 60 * 24) + 1 : 0;
+    let totalDays = lastCollectionDate ? (new Date(lastCollectionDate) - new Date(startDate)) / (1000 * 60 * 60 * 24) + 2 : 0;
     let totalCollects = schedule.length;
 
     return [totalDays, lastCollectionDate, totalCollects < numCollections, schedule];
