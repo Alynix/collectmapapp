@@ -11,6 +11,23 @@ const selectedCluster = ref(null);
 
 const popupContent = ref(null);
 
+const clickCallback = async (e) => {
+    console.log('Clicked on cluster');
+    selectedCluster.value = e.features[0]
+
+    // Need the dom update cycle to complete 
+    // so that the NBI popup is mounted and rendered
+    await nextTick();
+
+    new mapboxgl.Popup({anchor: 'bottom-right'})
+        .setLngLat(e.lngLat)
+        .setDOMContent(
+            popupContent.value
+        )
+        .addTo(mapStore.mapbox_instance);
+
+}
+
 onMounted(() => {
     let map_instance = mapStore.mapbox_instance
 
@@ -33,26 +50,14 @@ onMounted(() => {
 
     //click event for polygons 
 
-    map_instance.on('click', 'clusters', async (e) => {
-        selectedCluster.value = e.features[0]
-        
-        // Need the dom update cycle to complete 
-        // so that the NBI popup is mounted and rendered
-        await nextTick();
-
-        new mapboxgl.Popup({anchor: 'bottom-right'})
-            .setLngLat(e.lngLat)
-            .setDOMContent(
-                popupContent.value
-            )
-            .addTo(map_instance);
-
-    });
+    map_instance.on('click', 'clusters', clickCallback);
 
 })
 
 onUnmounted(() => {
     let map_instance = mapStore.mapbox_instance
+
+    map_instance.off('click', 'clusters', clickCallback);
 
     if (map_instance.getLayer("clusters")) {
       map_instance.removeLayer("clusters");

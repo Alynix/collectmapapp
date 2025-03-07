@@ -11,6 +11,7 @@ export const useMapStore = defineStore("mapstore",() => {
     const mapZoom = useLocalStorage('map.zoom', 16);
 
     const showDraw = ref(true);
+    const showMeasure = ref(false);
 
     const showBridges = ref(true);
     const showClusters = ref(true);
@@ -27,6 +28,6 @@ export const useMapStore = defineStore("mapstore",() => {
 
     const sbAPP = ref(null) // Superblocks app instance
 
-    return { mapbox_instance,map_mounted,mapCenter,mapZoom,showBridges,showClusters,showDraw,showCounties,calcArea,mapboxdraw_instance,draw_data,isVisible,sbAPP }
+    return { mapbox_instance,map_mounted,mapCenter,mapZoom,showBridges,showClusters,showDraw,showMeasure,showCounties,calcArea,mapboxdraw_instance,draw_data,isVisible,sbAPP}
 
 });
