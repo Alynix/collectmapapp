@@ -253,10 +253,10 @@
 
   const costPerBridge = ref(0); // Cost per bridge in dollars
 
-  const laborHourlyCost = ref(50); // Hourly labor cost in dollars
+  const laborHourlyCost = ref(30); // Hourly labor cost in dollars
 
   const systemBaseCost = ref(6000); // Base cost of a collection system
-  const systemMonthlyCost = ref(6000); // Monthly cost of a collection system
+  const systemMonthlyCost = ref(4000); // Monthly cost of a collection system
 
   const showSchedule = ref(true);
 
