@@ -41,8 +41,8 @@
         <div class="stats stats-vertical shadow">
           <div class="stat">
             <div class="stat-title">Duration</div>
-            <div class="stat-value">{{ totalPlanDays }} days</div>
-            <div class="stat-desc">{{planStartDate}} - {{planEndDate}} {{ totalMonthsLeased }} Months Leased</div>
+            <div class="stat-value">{{ planArray[0] }} days</div>
+            <div class="stat-desc">{{planStartDate}} - {{planArray[1]}} {{ costArray[3] }} Months Leased</div>
           </div>
 
           <div class="stat">
@@ -53,9 +53,9 @@
 
           <div class="stat">
             <div class="stat-title">Cost</div>
-            <div class="stat-value">{{ planCost }}$</div>
-            <div class="stat-desc"> cost per day: {{ costPerDay }} $</div>
-            <div class="stat-desc"> cost per bridge: {{ costPerBridge }} $</div>
+            <div class="stat-value">{{ costArray[0] }}$</div>
+            <div class="stat-desc"> cost per day: {{ costArray[1] }} $</div>
+            <div class="stat-desc"> cost per bridge: {{ costArray[2] }} $</div>
           </div>
         </div>
 
@@ -78,7 +78,7 @@
           </label>
           <div class="dropdown text-xs">
             <div tabindex="0" role="button" class="btn btn-warning btn-xs ">
-              {{ selectedOptions() }}
+              {{ selectedOptions }}
             </div>
             <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 text-xs">
               <li v-for="option in options" :key="option.id">
@@ -169,7 +169,7 @@
 </template>
   
 <script setup>
-  import { onMounted, onUnmounted, ref, watch } from 'vue';
+  import { onMounted, onUnmounted, ref, watch, computed } from 'vue';
   import mapboxgl from 'mapbox-gl';
   import { MapboxAddressAutofill, MapboxSearchBox, MapboxGeocoder, config } from '@mapbox/search-js-web'
 
@@ -231,13 +231,15 @@
     option.selected = !option.selected;
   };
 
-  const selectedOptions = () => {
+  const selectedOptions = computed(() => {
+    console.log('Updating selected options')
     return options.value.filter((opt) => opt.selected).map((opt) => opt.name).join(", ") || "Select options";
-  };
+  });
 
-  const selectedOptionsIds = () => {
+  const selectedOptionsIds = computed(() => {
+    console.log('Updating selected options IDS')
     return options.value.filter((opt) => opt.selected).map((opt) => opt.id);
-  };
+  });
 
   //variables for the scheduling calculations
 
@@ -381,98 +383,22 @@
     mapStore.sbAPP.properties = {EmbedGeoPolygon:newValue}
   })
 
-  watch(planStartDate,(newValue,oldValue)=>{
+  //planArray = [totalPlanDays,planEndDate,tooManyClusters,allScheduleDates]
+  const planArray = computed(() => {
 
     const excludedDays = excludeWeekends.value ? [6, 7] : [];
-    allValidDates.value = getValidCollectionDays(newValue, excludedDays, selectedOptionsIds(),maxMonths.value);
+    const excludedMonths = selectedOptionsIds.value;
+    const allValidDates = getValidCollectionDays(planStartDate.value, excludedDays, excludedMonths,maxMonths.value);
 
-    const [totalDays, endDate, tooMany, scheduleDates] = computeDays(numClusters.value,numberSystems.value,allValidDates.value,newValue,collectEfficiency.value)
-
-    totalPlanDays.value = totalDays
-    planEndDate.value = endDate
-    tooManyClusters.value = tooMany
-    allScheduleDates.value = scheduleDates
-
+    return computeDays(numClusters.value,numberSystems.value,allValidDates,planStartDate.value,collectEfficiency.value)
   })
 
-  watch(numClusters,(newValue,oldValue)=>{
-
-    const excludedDays = excludeWeekends.value ? [6, 7] : [];
-    allValidDates.value = getValidCollectionDays(planStartDate.value, excludedDays, selectedOptionsIds(),maxMonths.value);
-
-    const [totalDays, endDate, tooMany, scheduleDates] = computeDays(newValue,numberSystems.value,allValidDates.value,planStartDate.value,collectEfficiency.value)
-
-    totalPlanDays.value = totalDays
-    planEndDate.value = endDate
-    tooManyClusters.value = tooMany
-    allScheduleDates.value = scheduleDates
-
+  // costArray = [planCost , costPerDay, costPerBridge, totalMonthsLeased]
+  const costArray = computed(() => {
+    return calculatePlanCost(planArray.value[0], laborHourlyCost.value, numClusters.value, systemMonthlyCost.value, numberSystems.value, systemBaseCost.value, numBridges.value)
   })
 
-  watch(numberSystems,(newValue,oldValue)=>{
-
-    const excludedDays = excludeWeekends.value ? [6, 7] : [];
-    allValidDates.value = getValidCollectionDays(planStartDate.value, excludedDays, selectedOptionsIds(),maxMonths.value);
-
-    const [totalDays, endDate, tooMany, scheduleDates] = computeDays(numClusters.value,newValue,allValidDates.value,planStartDate.value,collectEfficiency.value)
-
-    totalPlanDays.value = totalDays
-    planEndDate.value = endDate
-    tooManyClusters.value = tooMany
-    allScheduleDates.value = scheduleDates
-
-  })
-
-  watch(collectEfficiency,(newValue,oldValue)=>{
-    
-    const excludedDays = excludeWeekends.value ? [6, 7] : [];
-    allValidDates.value = getValidCollectionDays(planStartDate.value, excludedDays, selectedOptionsIds(),maxMonths.value);
-
-    const [totalDays, endDate, tooMany, scheduleDates] = computeDays(numClusters.value,numberSystems.value,allValidDates.value,planStartDate.value,newValue)
-
-    totalPlanDays.value = totalDays
-    planEndDate.value = endDate
-    tooManyClusters.value = tooMany
-    allScheduleDates.value = scheduleDates
-
-  })
-
-  watch(excludeWeekends,(newValue,oldValue)=>{
-    
-    const excludedDays = excludeWeekends.value ? [6, 7] : [];
-    allValidDates.value = getValidCollectionDays(planStartDate.value, excludedDays, selectedOptionsIds(),maxMonths.value);
-
-    const [totalDays, endDate, tooMany, scheduleDates] = computeDays(numClusters.value,numberSystems.value,allValidDates.value,planStartDate.value,collectEfficiency.value)
-
-    totalPlanDays.value = totalDays
-    planEndDate.value = endDate
-    tooManyClusters.value = tooMany
-    allScheduleDates.value = scheduleDates
-
-  })
-
-  // Simple Cost Approximation for now
-  watch(totalPlanDays,(newValue,oldValue)=>{
-
-    const [Cost,perDay,PerBridge,Months] = calculatePlanCost(newValue, laborHourlyCost.value, numClusters.value, systemMonthlyCost.value, numberSystems.value, systemBaseCost.value, numBridges.value)
-
-    planCost.value = Cost;
-    costPerDay.value = perDay;
-    costPerBridge.value = PerBridge;
-    totalMonthsLeased.value = Months;
-
-  })
-
-  watch(laborHourlyCost,(newValue,oldValue)=>{
-
-    const [Cost,perDay,PerBridge,Months] = calculatePlanCost(totalPlanDays.value, newValue, numClusters.value, systemMonthlyCost.value, numberSystems.value, systemBaseCost.value, numBridges.value)
-
-    planCost.value = Cost;
-    costPerDay.value = perDay;
-    costPerBridge.value = PerBridge;
-    totalMonthsLeased.value = Months;
-
-  })
+  
 
   onUnmounted(() => {
     mapStore.map_mounted = false;
