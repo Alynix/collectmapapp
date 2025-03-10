@@ -18,7 +18,6 @@ const popupContent = ref(null);
 const numberInput = ref(0);
 
 const clickCallback = async (e) => {
-        console.log('Clicked on bridge');
         selectedBridge.value = e.features[0]
 
         selectedLat.value = selectedBridge.value.properties['latitude']
@@ -92,7 +91,6 @@ const buttonAction = (properties) => {
 const triggerClusterUpdate = (properties) => {
     if (properties['inCluster'] == true) {
         mapStore.isVisible = true;
-        console.log(properties['cluster_id'])
         mapStore.sbAPP.trigger('removeFromCluster', {"cluster_id":String(properties['cluster_id']),"nbi_objectid":properties['nbi_objectid']})
     } else {
         mapStore.isVisible = true;

@@ -378,8 +378,6 @@
   });
 
   watch(drawPolygon,(newValue,oldValue)=>{
-    //console.log('Old',oldValue)
-    //console.log('New',newValue)
     mapStore.sbAPP.properties = {EmbedGeoPolygon:newValue}
   })
 
@@ -413,7 +411,6 @@
 
             bbox.value = turf.bbox(data)
 
-            //console.log(data.features[0].geometry)
             drawPolygon.value = data.features[0].geometry
 
             // Restrict the area to 2 decimal points.
