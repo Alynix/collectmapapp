@@ -12,7 +12,6 @@ const selectedCluster = ref(null);
 const popupContent = ref(null);
 
 const clickCallback = async (e) => {
-    console.log('Clicked on cluster');
     selectedCluster.value = e.features[0]
 
     // Need the dom update cycle to complete 

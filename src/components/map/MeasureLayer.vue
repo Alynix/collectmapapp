@@ -34,8 +34,6 @@ const geojson = ref({
 
 const clickCallback = async (e) => {
 
-    console.log('Clicked on map');
-
     const features = mapStore.mapbox_instance.queryRenderedFeatures(e.point, {
         layers: ['measure-points']
     });
@@ -116,8 +114,6 @@ onMounted(()=>{
 
     mapStore.showDraw = false
 
-    console.log("Measure Layer Mounted ")
-
     // measuring tool 
 
     
@@ -180,8 +176,6 @@ watch(useMeters,(newVal,oldVal)=>{
 
 onUnmounted(()=>{
     let map_instance = mapStore.mapbox_instance
-
-    console.log("Measure Layer Unmounted ")
 
     map_instance.off('click', clickCallback);
 
