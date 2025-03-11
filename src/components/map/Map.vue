@@ -1,12 +1,156 @@
 <template>
-    <div class="map-wrapper">
 
+    <div class="navbar bg-base-100 shadow-sm">
+        <div class="flex-1 gap-2">
+          <a class="bg-ghost text-xl">Bridge Collection Clusters</a>
+
+          <button class="btn btn-primary btn-xs"@click="mapStore.isVisible = !mapStore.isVisible"> Bridge Selection Tool </button>
+          
+          <button class="btn btn-neutral btn-xs"@click="resetView(planBBOX)"> Zoom to Region </button>
+
+
+        </div>
+        <div class="flex gap-2">
+
+          <button :class="['btn', mapStore.showMeasure ? 'btn-warning' : 'btn-error','btn-xs']" @click="mapStore.showMeasure = !mapStore.showMeasure"> <span v-show="!mapStore.showMeasure">Show</span> <span v-show="mapStore.showMeasure">Hide</span> Measure Tool </button>
+
+          <button :class="['btn', showSchedule ? 'btn-warning' : 'btn-success','btn-xs']" @click="showSchedule = !showSchedule"> <span v-show="!showSchedule">Show</span> <span v-show="showSchedule">Hide</span> Esimator </button>
+          
+          <button :class="['btn', mapStore.showBridges ? 'btn-warning' : 'btn-success','btn-xs']" @click="mapStore.showBridges = !mapStore.showBridges"> <span v-show="!mapStore.showBridges">Show</span> <span v-show="mapStore.showBridges">Hide</span> Bridges </button>
+
+          <button :class="['btn', mapStore.showClusters ? 'btn-warning' : 'btn-success','btn-xs']" @click="mapStore.showClusters = !mapStore.showClusters"> <span v-show="!mapStore.showClusters">Show</span> <span v-show="mapStore.showClusters">Hide</span> Clusters </button>
+        
+          <button :class="['btn', mapStore.showCounties ? 'btn-warning' : 'btn-success','btn-xs']" @click="mapStore.showCounties = !mapStore.showCounties"> <span v-show="!mapStore.showCounties">Show</span> <span v-show="mapStore.showCounties">Hide</span> Counties </button>
+
+          <button class="btn btn-warn btn-xs" @click="clearAllLayers(clear_draw=true)"> Clear Map </button>
+
+        </div>
+
+    </div>
+
+    <div class="map-right-sidebar">
+        
+      <div class="map-search bg-primary" ref="search_container_el"></div>
       
+      <div class="divider"></div>
 
-      <div class="map-right-sidebar">
-        <div class="map-search" ref="search_container_el"></div>
-          <slot name="right-sidebar"></slot>
+        <div class="flex w-full flex-col" v-show="!mapStore.isVisible && showSchedule">
+          
+          
+
+        <div class="stats stats-vertical shadow">
+          <div class="stat">
+            <div class="stat-title">Duration</div>
+            <div class="stat-value">{{ planArray[0] }} days</div>
+            <div class="stat-desc">{{planStartDate}} - {{planArray[1]}} {{ costArray[3] }} Months Leased</div>
+          </div>
+
+          <div class="stat">
+            <div class="stat-title">Total Planned Collects</div>
+            <div class="stat-value">{{ numClusters }}</div>
+            <div class="stat-desc">( {{ numBridges }} bridges)</div>
+          </div>
+
+          <div class="stat">
+            <div class="stat-title">Cost</div>
+            <div class="stat-value">{{ costArray[0] }}$</div>
+            <div class="stat-desc"> cost per day: {{ costArray[1] }} $</div>
+            <div class="stat-desc"> cost per bridge: {{ costArray[2] }} $</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="card bg-base-100 w-full">
+          <div class="card-body">
+            <h2 class="card-title">Scheduling Controls</h2>
+
+        <div class="join join-vertical">
+          <div class="join join-horizontal">
+            <label class="label bg-base-100">
+              <span class="label-text">Start Date - </span>
+            </label>
+            <input type="date" class="input text-center" v-model="planStartDate"/>
+          </div>
+          
+          <label class="label bg-base-100">
+              <span class="label-text">Excluded Months - </span>
+          </label>
+          <div class="dropdown text-xs">
+            <div tabindex="0" role="button" class="btn btn-warning btn-xs ">
+              {{ selectedOptions }}
+            </div>
+            <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 text-xs">
+              <li v-for="option in options" :key="option.id">
+                <label class="cursor-pointer flex items-center gap-2">
+                  <input type="checkbox" v-model="option.selected" class="checkbox checkbox-primary" />
+                  <span>{{ option.name }}</span>
+                </label>
+              </li>
+            </ul>
+          </div>
+          <div>
+          <fieldset class="fieldset p-2 bg-base-100 w-auto">
+            <label class="fieldset-label text-xs">
+              <input type="checkbox" checked="checked" class="checkbox" v-model="excludeWeekends"/>
+               Exclude Weekends
+            </label>
+          </fieldset>
+          </div>
+          <div class="flex items-center gap-2 w-auto">
+            <label class="floating-label bg-base-100">
+              <span class="label-text">Available Docks - </span>
+            </label>
+            <input 
+              type="number" 
+              v-model="numberSystems" 
+              min="1" 
+              max="10" 
+              class="input input-bordered w-auto text-center btn-sm"
+            />
+          </div>
+          <div class="flex items-center gap-2 w-auto">
+            <label class="floating-label bg-base-100">
+              <span class="label-text">Hourly Labor Cost -  </span>
+            </label>
+            <input 
+              type="number" 
+              v-model="laborHourlyCost" 
+              min="10" 
+              max="1000" 
+              class="input input-bordered w-auto text-center btn-sm"
+            ><span class="unit bg-base-100">$</span></input>
+          </div>
+          <div class="w-full max-w-xs">
+            <label class="floating-label center bg-base-100">
+              <span class="label-text">Efficiency Modifier - </span>
+            </label>
+            <input type="range" min="0.2" max="1" class="range bg-base-100 btn-xs" step="0.05" v-model="collectEfficiency"/>
+            <div class="flex justify-between px-2.5 mt-0 text-xs bg-base-100">
+              <span>|</span>
+              <span>|</span>
+              <span>|</span>
+              <span>|</span>
+              <span>|</span>
+            </div>
+            <div class="flex justify-between px-2.0 mt-0 text-xs bg-base-100">
+              <span>20%</span>
+              <span>40%</span>
+              <span>60%</span>
+              <span>80%</span>
+              <span>100%</span>
+            </div>
+          </div>
+        </div>
+
+        </div>
+        </div>
+
       </div>
+
+    </div>
+
+    <div class="map-wrapper">
 
       <div ref="map_el" class="map"></div>
 
@@ -14,33 +158,6 @@
       
 
       <div ref="superblocksWrapper" class="sb-container" v-show="mapStore.isVisible"></div>
-
-      <div class="dialogue">
-
-        <div class="p-3 w-100% bg-gray-900 text-white">
-          <p> Bridge Collection Clusters </p>
-
-          <button class="bg-green-500 mx-2 p-2 text-xs rounded-md"@click="mapStore.isVisible = !mapStore.isVisible"> Bridge Selection Tool </button>
-          
-          <button class="bg-orange-500 mx-2 p-2 text-xs rounded-md"@click="resetView(planBBOX)"> Zoom to Region </button>
-
-
-
-          <!-- disable button for toggling draw polygon. 
-          <button class="bg-green-500 mx-2 p-2 text-xs rounded-md" @click="mapStore.showDraw = !mapStore.showDraw"> <span v-show="!mapStore.showDraw">Show</span> <span v-show="mapStore.showDraw">Hide</span> Polygon </button>
-           -->
-
-          <button class="bg-blue-500 mx-2 p-2 text-xs rounded-md" @click="mapStore.showBridges = !mapStore.showBridges"> <span v-show="!mapStore.showBridges">Show</span> <span v-show="mapStore.showBridges">Hide</span> Bridges </button>
-
-          <button class="bg-blue-500 mx-2 p-2 text-xs rounded-md" @click="mapStore.showClusters = !mapStore.showClusters"> <span v-show="!mapStore.showClusters">Show</span> <span v-show="mapStore.showClusters">Hide</span> Clusters </button>
-        
-          <button class="bg-blue-500 mx-2 p-2 text-xs rounded-md" @click="mapStore.showCounties = !mapStore.showCounties"> <span v-show="!mapStore.showCounties">Show</span> <span v-show="mapStore.showCounties">Hide</span> Counties </button>
-
-          <button class="bg-red-500 mx-2 p-2 text-xs rounded-md"@click="clearAllLayers(clear_draw=true)"> Clear Map </button>
-
-        </div>
-
-      </div>
 
       <div class="calculation-box">
           <p>Area:</p>
@@ -52,7 +169,7 @@
 </template>
   
 <script setup>
-  import { onMounted, onUnmounted, ref, watch } from 'vue';
+  import { onMounted, onUnmounted, ref, watch, computed } from 'vue';
   import mapboxgl from 'mapbox-gl';
   import { MapboxAddressAutofill, MapboxSearchBox, MapboxGeocoder, config } from '@mapbox/search-js-web'
 
@@ -62,6 +179,8 @@
   mapboxgl.accessToken = 'pk.eyJ1IjoiY21lcnJpZ2FuIiwiYSI6ImNtNjlrNHJoNjBneDkybG4zaW5mZnE1OHoifQ.6K-waLtuExh_XFxgOD-E1w';
 
   import { createSuperblocksEmbed } from '@superblocksteam/embed';
+
+  import { getValidCollectionDays,computeDays,calculatePlanCost } from "@/utils/scheduleutils";
 
   
   import 'mapbox-gl/dist/mapbox-gl.css';
@@ -88,9 +207,70 @@
 
   const cluster_bbox = ref([])
 
-  const drawPolygon = ref({})
+  const drawPolygon = ref(2);
+
+ 
+
+
+  const options = ref([
+    { id: 1, name: "January", selected: true },
+    { id: 2, name: "February", selected: true },
+    { id: 3, name: "March", selected: false },
+    { id: 4, name: "April", selected: false },
+    { id: 5, name: "May", selected: false },
+    { id: 6, name: "June", selected: false },
+    { id: 7, name: "July", selected: false },
+    { id: 8, name: "August", selected: false },
+    { id: 9, name: "September", selected: false },
+    { id: 10, name: "October", selected: false },
+    { id: 11, name: "November", selected: true },
+    { id: 12, name: "December", selected: true }
+  ]);
+
+  const toggleSelection = (option) => {
+    option.selected = !option.selected;
+  };
+
+  const selectedOptions = computed(() => {
+    console.log('Updating selected options')
+    return options.value.filter((opt) => opt.selected).map((opt) => opt.name).join(", ") || "Select options";
+  });
+
+  const selectedOptionsIds = computed(() => {
+    console.log('Updating selected options IDS')
+    return options.value.filter((opt) => opt.selected).map((opt) => opt.id);
+  });
+
+  //variables for the scheduling calculations
+
+  const today = new Date(); // default planStartDate to today's date
+  const planStartDate = ref(today.toISOString().split('T')[0]);
+
+  const numberSystems = ref(2); // Default value
+
+  const allValidDates = ref([]); // Array to store all valid collection days
+  const allScheduleDates = ref([]); // Array to store hypothetical date/system pairs
+  
+  const numClusters = ref(0); // Number of clusters
+  const numBridges = ref(0); // Number of bridges
+
+  const collectEfficiency = ref(0.5); // Efficiency of collection
+
+  const totalMonthsLeased = ref(0);
+
+  const laborHourlyCost = ref(30); // Hourly labor cost in dollars
+
+  const systemBaseCost = ref(6000); // Base cost of a collection system
+  const systemMonthlyCost = ref(4000); // Monthly cost of a collection system
+
+  const showSchedule = ref(true);
+
+  const excludeWeekends = ref(true);
+
+  const maxMonths = ref(36);
 
   
+
 
   onMounted(() => {
     
@@ -171,6 +351,8 @@
 
     
 
+    
+
   mapStore.sbAPP = createSuperblocksEmbed({
         src: "https://app.superblocks.com/embed/applications/7472fe5c-cb1c-41c4-8026-bca71ddf467a",
         colorScheme: "dark",
@@ -185,10 +367,25 @@
   });
 
   watch(drawPolygon,(newValue,oldValue)=>{
-    //console.log('Old',oldValue)
-    //console.log('New',newValue)
     mapStore.sbAPP.properties = {EmbedGeoPolygon:newValue}
   })
+
+  //planArray = [totalPlanDays,planEndDate,tooManyClusters,allScheduleDates]
+  const planArray = computed(() => {
+
+    const excludedDays = excludeWeekends.value ? [6, 7] : [];
+    const excludedMonths = selectedOptionsIds.value;
+    const allValidDates = getValidCollectionDays(planStartDate.value, excludedDays, excludedMonths,maxMonths.value);
+
+    return computeDays(numClusters.value,numberSystems.value,allValidDates,planStartDate.value,collectEfficiency.value)
+  })
+
+  // costArray = [planCost , costPerDay, costPerBridge, totalMonthsLeased]
+  const costArray = computed(() => {
+    return calculatePlanCost(planArray.value[0], laborHourlyCost.value, numClusters.value, systemMonthlyCost.value, numberSystems.value, systemBaseCost.value, numBridges.value)
+  })
+
+  
 
   onUnmounted(() => {
     mapStore.map_mounted = false;
@@ -203,7 +400,6 @@
 
             bbox.value = turf.bbox(data)
 
-            //console.log(data.features[0].geometry)
             drawPolygon.value = data.features[0].geometry
 
             // Restrict the area to 2 decimal points.
@@ -273,6 +469,16 @@
       case "clustersReturned":
         
         clearLayer("clusters")
+
+        numClusters.value = payload.clusters.features.length
+
+        let bridge_count = 0;
+        //loop clusters to count all bridges
+        payload.clusters.features.forEach((cluster) => {
+          bridge_count += cluster.properties.bridges.length
+        })
+        
+        numBridges.value = bridge_count;
 
         map_instance.value.addSource("clusters", {
         type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
@@ -362,6 +568,9 @@
     for(let layer of layers){
       clearLayer(layer);
     }
+
+    numClusters.value = 0;
+
   }
   
 
@@ -371,6 +580,7 @@
  
 .map-wrapper {
   position: relative;
+  z-index: 1;
 }
 
 .map {
@@ -388,17 +598,9 @@
   color: #FFF;
 }
 
-.dialogue {
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  width: 100%;
-  height: 60px;
-}
-
 .map-right-sidebar {
   position: absolute;
-  top: 15px;
+  top: 75px;
   right: 50px;
   width: 330px;
   max-width: 500px;
@@ -410,7 +612,7 @@
         width: 150px;
         position: absolute;
         bottom: 10px;
-        left: 10px;
+        right: 10px;
         background-color: rgba(240, 228, 67, 0.9);
         padding: 0px;
         text-align: center;

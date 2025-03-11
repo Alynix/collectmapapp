@@ -10,6 +10,8 @@ const mapStore = useMapStore();
 onMounted(()=>{
     let draw_instance = mapStore.mapboxdraw_instance
 
+    mapStore.showMeasure = false
+
     let data = mapStore.draw_data
 
     if (data){
@@ -32,3 +34,8 @@ onUnmounted(()=>{
 })
 
 </script>
+
+<template>
+
+
+</template>

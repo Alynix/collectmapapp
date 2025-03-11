@@ -17,6 +17,26 @@ const popupContent = ref(null);
 
 const numberInput = ref(0);
 
+const clickCallback = async (e) => {
+        selectedBridge.value = e.features[0]
+
+        selectedLat.value = selectedBridge.value.properties['latitude']
+        selectedLong.value = selectedBridge.value.properties['longitude']
+
+        url.value = "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=" + selectedLat.value + "," + selectedLong.value
+        
+        // Need the dom update cycle to complete 
+        // so that the NBI popup is mounted and rendered
+        await nextTick();
+
+        new mapboxgl.Popup({anchor: 'bottom-right'})
+            .setLngLat(e.lngLat)
+            .setDOMContent(
+                popupContent.value
+            )
+            .addTo(mapStore.mapbox_instance);
+}
+
 onMounted(() => {
     let map_instance = mapStore.mapbox_instance
 
@@ -42,30 +62,14 @@ onMounted(() => {
           });
     }
 
-    map_instance.on('click', 'bridges', async (e) => {
-        selectedBridge.value = e.features[0]
-
-        selectedLat.value = selectedBridge.value.properties['latitude']
-        selectedLong.value = selectedBridge.value.properties['longitude']
-
-        url.value = "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=" + selectedLat.value + "," + selectedLong.value
-        
-        // Need the dom update cycle to complete 
-        // so that the NBI popup is mounted and rendered
-        await nextTick();
-
-        new mapboxgl.Popup({anchor: 'bottom-right'})
-            .setLngLat(e.lngLat)
-            .setDOMContent(
-                popupContent.value
-            )
-            .addTo(map_instance);
-    });
+    map_instance.on('click', 'bridges', clickCallback);
 
 })
 
 onUnmounted(() => {
     let map_instance = mapStore.mapbox_instance
+
+    map_instance.off('click', 'bridges', clickCallback);
 
     if (map_instance.getLayer("bridges")) {
       map_instance.removeLayer("bridges");
@@ -87,7 +91,6 @@ const buttonAction = (properties) => {
 const triggerClusterUpdate = (properties) => {
     if (properties['inCluster'] == true) {
         mapStore.isVisible = true;
-        console.log(properties['cluster_id'])
         mapStore.sbAPP.trigger('removeFromCluster', {"cluster_id":String(properties['cluster_id']),"nbi_objectid":properties['nbi_objectid']})
     } else {
         mapStore.isVisible = true;
