@@ -47,7 +47,7 @@ export function computeDays(numCollections, numDevices, validDays, startDate, ef
     }
 
     let lastCollectionDate = schedule.length > 0 ? schedule[schedule.length - 1][0] : null;
-    let totalDays = lastCollectionDate ? (new Date(lastCollectionDate) - new Date(startDate)) / (1000 * 60 * 60 * 24) + 2 : 0;
+    let totalDays = lastCollectionDate ? (new Date(lastCollectionDate) - new Date(startDate)) / (1000 * 60 * 60 * 24) + 1 : 0;
     let totalCollects = schedule.length;
 
     return [totalDays, lastCollectionDate, totalCollects < numCollections, schedule];
