@@ -245,7 +245,6 @@
 
   const today = new Date(); // default planStartDate to today's date
   const planStartDate = ref(today.toISOString().split('T')[0]);
-  const planEndDate = ref(today.toISOString().split('T')[0]);
 
   const numberSystems = ref(2); // Default value
 
@@ -257,17 +256,7 @@
 
   const collectEfficiency = ref(0.5); // Efficiency of collection
 
-  const totalPlanDays = ref(0); // Total number of days for the plan
-
   const totalMonthsLeased = ref(0);
-
-  const tooManyClusters = ref(false);
-
-  const planCost = ref(0); // Total cost of the plan in dollars
-
-  const costPerDay = ref(0); // Cost per day in dollars
-
-  const costPerBridge = ref(0); // Cost per bridge in dollars
 
   const laborHourlyCost = ref(30); // Hourly labor cost in dollars
 
