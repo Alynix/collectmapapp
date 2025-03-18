@@ -13,6 +13,8 @@ import CountyLayer from './components/map/USCounties.vue'
 
 import {useMapStore } from './stores/mapstore'
 
+import BridgesListPane from './components/map/BridgesListPane.vue'
+
 
 const mapStore=useMapStore();
 
@@ -21,6 +23,9 @@ const mapStore=useMapStore();
 <template>
    <main>
     <MyMap>
+      <template #left-sidebar>
+        <BridgesListPane v-if="mapStore.isVisible"></BridgesListPane>
+      </template>
   
     </MyMap>
 

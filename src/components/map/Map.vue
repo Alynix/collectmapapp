@@ -28,6 +28,10 @@
 
     </div>
 
+    <div class="map-left-sidebar">
+          <slot name="left-sidebar"></slot>
+    </div>
+
     <div class="map-right-sidebar">
         
       <div class="map-search bg-primary" ref="search_container_el"></div>
@@ -171,6 +175,7 @@
   import { MapboxAddressAutofill, MapboxSearchBox, MapboxGeocoder, config } from '@mapbox/search-js-web'
 
   
+
   import MapboxDraw from "@mapbox/mapbox-gl-draw";  
 
   mapboxgl.accessToken = 'pk.eyJ1IjoiY21lcnJpZ2FuIiwiYSI6ImNtNjlrNHJoNjBneDkybG4zaW5mZnE1OHoifQ.6K-waLtuExh_XFxgOD-E1w';
@@ -225,12 +230,10 @@
   };
 
   const selectedOptions = computed(() => {
-    console.log('Updating selected options')
     return options.value.filter((opt) => opt.selected).map((opt) => opt.name).join(", ") || "Select options";
   });
 
   const selectedOptionsIds = computed(() => {
-    console.log('Updating selected options IDS')
     return options.value.filter((opt) => opt.selected).map((opt) => opt.id);
   });
 
@@ -347,7 +350,7 @@
   watch(drawPolygon,(newValue,oldValue)=>{
     //mapStore.sbAPP.properties = {EmbedGeoPolygon:newValue}
 
-    console.log(newValue)  
+    //console.log(newValue)  
   })
 
   //planArray = [totalPlanDays,planEndDate,tooManyClusters,allScheduleDates]
@@ -383,9 +386,6 @@
             drawPolygon.value = data.features[0].geometry
 
             await mapStore.fetchBridges(drawPolygon.value);
-            console.log(mapStore.localBridges)
-
-            console.log('PAYLOAD',mapStore.bridgePayload)
 
             refreshBridges()
 
@@ -579,6 +579,15 @@
   height: 90%;
   background: #000;
   color: #FFF;
+}
+
+.map-left-sidebar {
+  position: absolute;
+  top: 140px;
+  left: 10px;
+  width: 100%;
+  max-width: 1800px;
+  z-index: 200;
 }
 
 .map-right-sidebar {
