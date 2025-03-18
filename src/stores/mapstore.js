@@ -2,6 +2,8 @@ import { defineStore } from "pinia";
 import { ref, markRaw } from "vue";
 import { useLocalStorage } from "@vueuse/core"
 
+import deckerAPI from "@/api/deckerAPI";
+
 export const useMapStore = defineStore("mapstore",() => {
 
     const mapbox_instance = ref({});
@@ -28,6 +30,44 @@ export const useMapStore = defineStore("mapstore",() => {
 
     const sbAPP = ref(null) // Superblocks app instance
 
-    return { mapbox_instance,map_mounted,mapCenter,mapZoom,showBridges,showClusters,showDraw,showMeasure,showCounties,calcArea,mapboxdraw_instance,draw_data,isVisible,sbAPP}
+    const macroPlans = ref([])
+
+    const fetchMacroPlans = async () => {
+        let response = await deckerAPI.get_macroplans();
+        macroPlans.value = response.data.features.map((feature) => {
+            const row = feature.properties;
+
+            return {
+                id: row.id,
+                name: row.name,
+                description: row.description,
+            }
+        });
+    }
+
+    const localBridges = ref([])
+
+    const bridgePayload = ref({})
+
+    const fetchBridges = async (polygon) => {
+
+        let response = await deckerAPI.get_bridges(polygon);
+
+        localBridges.value = response.data.features.map((feature) => {
+            const row = feature.properties;
+
+            return {
+                id: row.id,
+                state_code: row.state_code,
+                structure_number: row.structure_number,
+            }
+        });
+
+        bridgePayload.value = response.data;
+
+    }
+
+
+    return { mapbox_instance,map_mounted,mapCenter,mapZoom,showBridges,showClusters,showDraw,showMeasure,showCounties,calcArea,mapboxdraw_instance,draw_data,isVisible,localBridges,bridgePayload,macroPlans,fetchMacroPlans,fetchBridges}
 
 });

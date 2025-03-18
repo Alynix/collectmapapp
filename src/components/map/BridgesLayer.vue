@@ -46,16 +46,8 @@ onMounted(() => {
                 type: 'circle',
                 source: "bridges",
                 paint: {
-                    'circle-color' : [
-                      'case',
-                      ['==', ['get', 'inCluster'], false], '#FFFF00',
-                      '#00FF00'
-                    ],
-                    'circle-radius': [
-                      'case',
-                      ['==', ['get', 'inCluster'], false], 4,
-                      6
-                    ],
+                    'circle-color' : "#FFFF00",
+                    'circle-radius': 4,
                     'circle-stroke-color':"#000000",
                     'circle-stroke-width':1
                 }
@@ -88,59 +80,89 @@ const buttonAction = (properties) => {
     }
 }
 
-const triggerClusterUpdate = (properties) => {
-    if (properties['inCluster'] == true) {
-        mapStore.isVisible = true;
-        mapStore.sbAPP.trigger('removeFromCluster', {"cluster_id":String(properties['cluster_id']),"nbi_objectid":properties['nbi_objectid']})
-    } else {
-        mapStore.isVisible = true;
-        mapStore.sbAPP.trigger('addToCluster', {"cluster_id":String(numberInput.value),"nbi_objectid":properties['nbi_objectid']})
-    }
-}
-
 </script>
 
 <template>
     <div class="popup-content" v-if="selectedBridge != null" ref="popupContent">
-        <div class="p-3 w-96 bg-gray-900 text-white">
-            <span class="text-lg font-bold">NBI {{selectedBridge.properties['nbi_objectid']}}</span>
-            <div class="grid grid-cols-6 py-3">
+        <div class="card w-[40rem] bg-white shadow-lg rounded-lg overflow-hidden">
+            <span class="text-lg font-bold">
+                <div class="flex gap-2">
+                    <div>Struct#: {{selectedBridge.properties['structure_number']}}</div>
+                    <button class="btn btn-warning btn-xs">
+                        <span @click=""><a v-bind:href="url" target="_blank">Street View</a></span>
+                    </button>
+                </div> 
+            </span>
+
+            <div class="flex gap-2 py-4">
                 <div>
-                    <div>{{selectedBridge.properties['DECK_WIDTH_MT_052']}}</div>
+                    <div>{{selectedBridge.properties['width_m']}}</div>
                     <div class="text-gray-400">width</div>
                 </div>
                 <div>
-                    <div>{{selectedBridge.properties['STRUCTURE_LEN_MT_049']}}</div>
+                    <div>{{selectedBridge.properties['length_m']}}</div>
                     <div class="text-gray-400">length</div>
                 </div>
                 <div>
-                    <div>{{parseInt(selectedBridge.properties['YEAR_BUILT_027'])}}</div>
-                    <div class="text-gray-400"> year built</div>
+                    <div>{{selectedBridge.properties['year_built']}}</div>
+                    <div class="text-gray-400"> built</div>
                 </div>
                 <div>
-                    <div>{{selectedBridge.properties['ROUTE_NUMBER_005D']}}</div>
-                    <div class="text-gray-400"> Route</div>
+                    <div>{{selectedBridge.properties['route_number']}}</div>
+                    <div class="text-gray-400"> route#</div>
                 </div>
                 <div>
-                    <div>{{selectedBridge.properties['TRAFFIC_LANES_ON_028A']}}</div>
-                    <div class="text-gray-400"> #Lanes</div>
+                    <div>{{selectedBridge.properties['lanes_on']}}</div>
+                    <div class="text-gray-400"> lanes</div>
                 </div>
                 <div>
-                    <div>{{selectedBridge.properties['cluster_id']}}</div>
-                    <div class="text-gray-400"> cluster id</div>
+                    <div>{{selectedBridge.properties['state_code']}}</div>
+                    <div class="text-gray-400"> state <code></code></div>
+                </div>
+                <div>
+                    <div>{{selectedBridge.properties['structure_kind']}}</div>
+                    <div class="text-gray-400"> kind </div>
+                </div>
+                <div>
+                    <div>{{selectedBridge.properties['owner']}}</div>
+                    <div class="text-gray-400"> owner <code></code></div>
                 </div>
             </div>
 
-            <button class="bg-green-500 mx-2 p-2 text-xs rounded-md">
-                <span @click="showApp()">View Details</span>
-            </button>
-            <button class="bg-green-500 mx-2 p-2 text-xs rounded-md">
-                <span @click=""><a v-bind:href="url" target="_blank">Street View</a></span>
-            </button>
-            <button class="bg-green-500 mx-2 p-2 text-xs rounded-md">
-                <span @click="triggerClusterUpdate(selectedBridge.properties)">{{buttonAction(selectedBridge.properties) + "  "}}</span>
-                <input type="number" v-model="numberInput" v-if="!selectedBridge.properties['inCluster']" class="w-10 h-6 text-black" />
-            </button>
+            <div class="flex gap-2 py-4">
+                <div>
+                    <div>{{selectedBridge.properties['county_code']}}</div>
+                    <div class="text-gray-400">county</div>
+                </div>
+                <div>
+                    <div>{{(selectedBridge.properties['deck_condition']===undefined) ? "NA": selectedBridge.properties['deck_condition']}}</div>
+                    <div class="text-gray-400">condition</div>
+                </div>
+                <div>
+                    <div>{{selectedBridge.properties['structure_type']}}</div>
+                    <div class="text-gray-400"> struct type </div>
+                </div>
+                <div>
+                    <div>{{selectedBridge.properties['wearing_surface_type']}}</div>
+                    <div class="text-gray-400"> surface </div>
+                </div>
+                <div>
+                    <div>{{selectedBridge.properties['average_daily_traffic']}}</div>
+                    <div class="text-gray-400"> ADT </div>
+                </div>
+                <div>
+                    <div>{{selectedBridge.properties['route_type']}}</div>
+                    <div class="text-gray-400"> route <code></code></div>
+                </div>
+                <div>
+                    <div>{{selectedBridge.properties['structure_type']}}</div>
+                    <div class="text-gray-400"> type </div>
+                </div>
+                <div>
+                    <div>{{selectedBridge.properties['id']}}</div>
+                    <div class="text-gray-400"> pk <code></code></div>
+                </div>
+            </div>
         </div>
     </div>
 </template>

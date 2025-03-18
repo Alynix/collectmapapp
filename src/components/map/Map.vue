@@ -155,9 +155,6 @@
       <div ref="map_el" class="map"></div>
 
       
-      
-
-      <div ref="superblocksWrapper" class="sb-container" v-show="mapStore.isVisible"></div>
 
       <div class="calculation-box">
           <p>Area:</p>
@@ -178,8 +175,6 @@
 
   mapboxgl.accessToken = 'pk.eyJ1IjoiY21lcnJpZ2FuIiwiYSI6ImNtNjlrNHJoNjBneDkybG4zaW5mZnE1OHoifQ.6K-waLtuExh_XFxgOD-E1w';
 
-  import { createSuperblocksEmbed } from '@superblocksteam/embed';
-
   import { getValidCollectionDays,computeDays,calculatePlanCost } from "@/utils/scheduleutils";
 
   
@@ -188,8 +183,6 @@
   import * as turf from "@turf/turf";
 
   import { useMapStore } from "@/stores/mapstore";
-  
-  const superblocksWrapper = ref(null)
 
   const map_el = ref(null);
   const map_instance = ref(null);
@@ -269,9 +262,6 @@
 
   const maxMonths = ref(36);
 
-  
-
-
   onMounted(() => {
     
     map_instance.value = new mapboxgl.Map({
@@ -349,25 +339,15 @@
       storeViewport(map_instance.value.getCenter(), map_instance.value.getZoom())
     })
 
-    
-
-    
-
-  mapStore.sbAPP = createSuperblocksEmbed({
-        src: "https://app.superblocks.com/embed/applications/7472fe5c-cb1c-41c4-8026-bca71ddf467a",
-        colorScheme: "dark",
-        id: "sb-embed",
-        onEvent: handleEvent,
-        // No properties defined. Use the Embed panel to add properties and uncomment this block.
-        properties: { EmbedGeoPolygon: drawPolygon.value }
-    });
-    
-  superblocksWrapper.value.appendChild(mapStore.sbAPP);
 
   });
 
+  
+
   watch(drawPolygon,(newValue,oldValue)=>{
-    mapStore.sbAPP.properties = {EmbedGeoPolygon:newValue}
+    //mapStore.sbAPP.properties = {EmbedGeoPolygon:newValue}
+
+    console.log(newValue)  
   })
 
   //planArray = [totalPlanDays,planEndDate,tooManyClusters,allScheduleDates]
@@ -392,7 +372,7 @@
 
   });
 
-  function updateArea(e) {
+  async function updateArea(e) {
         const data = draw_instance.value.getAll();
         
         if (data.features.length > 0) {
@@ -401,6 +381,13 @@
             bbox.value = turf.bbox(data)
 
             drawPolygon.value = data.features[0].geometry
+
+            await mapStore.fetchBridges(drawPolygon.value);
+            console.log(mapStore.localBridges)
+
+            console.log('PAYLOAD',mapStore.bridgePayload)
+
+            refreshBridges()
 
             // Restrict the area to 2 decimal points.
             mapStore.calcArea = Math.round(area * 100) / 100;
@@ -437,33 +424,7 @@
 
       case "bridgesReturned":
 
-        clearLayer("bridges")
-
-        map_instance.value.addSource("bridges", {
-        type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
-        data: payload.bridges
-
-            });
-
-        map_instance.value.addLayer({
-                id: "bridges",
-                type: 'circle',
-                source: "bridges",
-                paint: {
-                    'circle-color' : [
-                      'case',
-                      ['==', ['get', 'inCluster'], false], '#FFFF00',
-                      '#00FF00'
-                    ],
-                    'circle-radius': [
-                      'case',
-                      ['==', ['get', 'inCluster'], false], 4,
-                      6
-                    ],
-                    'circle-stroke-color':"#000000",
-                    'circle-stroke-width':1
-                }
-          });
+        
 
         break;
       case "clustersReturned":
@@ -555,6 +516,28 @@
     if (map_instance.value.getSource(tag)) {
       map_instance.value.removeSource(tag);
     }
+  }
+
+  const refreshBridges = () => {
+      clearLayer("bridges")
+
+      map_instance.value.addSource("bridges", {
+      type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
+      data: mapStore.bridgePayload
+
+          });
+
+      map_instance.value.addLayer({
+              id: "bridges",
+              type: 'circle',
+              source: "bridges",
+              paint: {
+                  'circle-color' : '#FFFF00',
+                  'circle-radius': 4,
+                  'circle-stroke-color':"#000000",
+                  'circle-stroke-width':1
+              }
+        });
   }
 
   const clearAllLayers = (clear_draw=false) => {
