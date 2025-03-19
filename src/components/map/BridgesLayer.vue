@@ -87,7 +87,7 @@ const buttonAction = (properties) => {
         <div class="card w-[40rem] bg-white shadow-lg rounded-lg overflow-hidden">
             <span class="text-lg font-bold">
                 <div class="flex gap-2">
-                    <div>Struct#: {{selectedBridge.properties['structure_number']}}</div>
+                    <div>{{selectedBridge.properties['bridge_name']}}</div>
                     <button class="btn btn-warning btn-xs">
                         <span @click=""><a v-bind:href="url" target="_blank">Street View</a></span>
                     </button>

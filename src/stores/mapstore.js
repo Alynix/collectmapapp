@@ -48,31 +48,32 @@ export const useMapStore = defineStore("mapstore",() => {
     const localBridges = ref([])
 
     const bridgeColDefs = ref([
-        { field: "bridge_name", headerName: "Bridge Name" },
-        { field: "state_name", headerName: "State Name" },
-        { field: "state_code", headerName: "State Code", width: 100 },
-        { field: "structure_number", headerName: "Structure Number", width: 150 },
-        { field: "county_code", headerName: "County Code", width: 120 },
-        { field: "route_type", headerName: "Route Type" },
-        { field: "route_number", headerName: "Route Number", width: 120 },
-        { field: "latitude", headerName: "Latitude", width: 120 },
-        { field: "longitude", headerName: "Longitude", width: 120 },
-        { field: "length_m", headerName: "Length (m)", width: 120 },
-        { field: "width_m", headerName: "Width (m)", width: 120 },
-        { field: "deck_condition", headerName: "Deck Condition", width: 150 },
-        { field: "lanes_on", headerName: "Lanes On", width: 100 },
-        { field: "year_built", headerName: "Year Built", width: 120 },
-        { field: "year_inspected", headerName: "Year Inspected", width: 150 },
-        { field: "structure_type", headerName: "Structure Type" },
-        { field: "structure_kind", headerName: "Structure Kind" },
-        { field: "deck_structure_type", headerName: "Deck Structure Type" },
-        { field: "wearing_surface_type", headerName: "Wearing Surface Type" },
-        { field: "owner", headerName: "Owner" },
-        { field: "average_daily_traffic", headerName: "Average Daily Traffic", width: 200 },
-        { field: "year_adt", headerName: "Year ADT", width: 120 },
-        { field: "features_description", headerName: "Features Description", width: 300 },
-        { field: "source_name", headerName: "Source Name" },
+        { value: "bridge_name", text: "Bridge Name" },
+        { value: "state_name", text: "State Name" },
+        { value: "state_code", text: "State Code" },
+        { value: "structure_number", text: "Structure Number" },
+        { value: "county_code", text: "County Code" },
+        { value: "route_type", text: "Route Type" },
+        { value: "route_number", text: "Route Number" },
+        { value: "latitude", text: "Latitude" },
+        { value: "longitude", text: "Longitude" },
+        { value: "length_m", text: "Length (m)" },
+        { value: "width_m", text: "Width (m)" },
+        { value: "deck_condition", text: "Deck Condition" },
+        { value: "lanes_on", text: "Lanes On" },
+        { value: "year_built", text: "Year Built" },
+        { value: "year_inspected", text: "Year Inspected" },
+        { value: "structure_type", text: "Structure Type" },
+        { value: "structure_kind", text: "Structure Kind" },
+        { value: "deck_structure_type", text: "Deck Structure Type" },
+        { value: "wearing_surface_type", text: "Wearing Surface Type" },
+        { value: "owner", text: "Owner" },
+        { value: "average_daily_traffic", text: "Average Daily Traffic" },
+        { value: "year_adt", text: "Year ADT" },
+        { value: "features_description", text: "Features Description" },
+        { value: "source_name", text: "Source Name" }
     ]);
+    
 
     const bridgePayload = ref({})
 
@@ -84,9 +85,7 @@ export const useMapStore = defineStore("mapstore",() => {
             const row = feature.properties;
 
             return {
-                id: row.id,
                 bridge_name: row.bridge_name ?? "NULL",
-                geometry: row.geometry ?? "NULL",
                 state_name: row.state_name ?? "NULL",
                 state_code: row.state_code,
                 structure_number: row.structure_number,
