@@ -387,6 +387,8 @@
 
             await mapStore.fetchBridges(drawPolygon.value);
 
+            console.log(mapStore.uniqueValues)
+
             refreshBridges()
 
             // Restrict the area to 2 decimal points.
