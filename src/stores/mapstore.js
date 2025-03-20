@@ -47,6 +47,8 @@ export const useMapStore = defineStore("mapstore",() => {
 
     const localBridges = ref([])
 
+    const selectedBridges = ref([])
+
     const bridgeColDefs = ref([
         { value: "bridge_name", text: "Bridge Name" },
         { value: "route_type", text: "Route Type" },
@@ -78,6 +80,8 @@ export const useMapStore = defineStore("mapstore",() => {
     const fetchBridges = async (polygon) => {
 
         let response = await deckerAPI.get_bridges(polygon);
+
+        uniqueValues.value = {};
 
         localBridges.value = response.data.features.map((feature) => {
             const row = feature.properties;
@@ -153,6 +157,7 @@ export const useMapStore = defineStore("mapstore",() => {
              mapboxdraw_instance,
              draw_data,isVisible,
              localBridges,
+             selectedBridges,
              bridgePayload,
              bridgeColDefs,
              uniqueValues,

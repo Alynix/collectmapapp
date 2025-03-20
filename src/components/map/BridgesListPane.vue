@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, onUnmounted, computed } from 'vue';
+import { onMounted, onUnmounted, computed, watch } from 'vue';
 import { useMapStore } from '@/stores/mapstore';
 import { ref } from 'vue';
 
@@ -9,8 +9,9 @@ const mapStore = useMapStore();
 
 onMounted(async () => {
     //await mapStore.fetchMacroPlans();
-    //console.log(mapStore.macroPlans);
-    console.log('BridgeLIST Mounted')
+
+    
+
 });
 
 onUnmounted(() => {
@@ -109,12 +110,27 @@ const filterOptions = computed(() => {
 
 
 <template>
+  <div class="p-4 bg-base-200">
+    <h2 class="text-lg font-bold">Bridge</h2>
+    <span class="text-xs text-gray-400">Click on a bridge to see more details</span>
+    <div class="flex gap-2 py-4">
+      <div>
+        <div>{{mapStore.selectedBridges.length}}</div>
+        <div class="text-gray-400">selected</div>
+      </div>
+      <div>
+        <div>{{mapStore.localBridges.length}}</div>
+        <div class="text-gray-400">total</div>
+      </div>
+    </div>
+    </div>  
     <EasyDataTable
       :headers="mapStore.bridgeColDefs"
       :items="mapStore.localBridges"
       :filter-options="filterOptions"
       :pagination="true"
       :rows-per-page="10"
+      v-model:items-selected="mapStore.selectedBridges" 
     >
     <template #header-length_m="header">
       <div class="filter-column">

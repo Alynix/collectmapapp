@@ -349,8 +349,6 @@
 
   watch(drawPolygon,(newValue,oldValue)=>{
     //mapStore.sbAPP.properties = {EmbedGeoPolygon:newValue}
-
-    //console.log(newValue)  
   })
 
   //planArray = [totalPlanDays,planEndDate,tooManyClusters,allScheduleDates]
@@ -368,6 +366,16 @@
     return calculatePlanCost(planArray.value[0], laborHourlyCost.value, numClusters.value, systemMonthlyCost.value, numberSystems.value, systemBaseCost.value, numBridges.value)
   })
 
+  const selectedBridgeNames = computed(() => {
+    return mapStore.selectedBridges.map((bridge) => bridge.bridge_name)
+  })
+
+  watch(selectedBridgeNames, (newValue, oldValue) => {
+    console.log("Bridge names changed")
+
+    refreshBridges(newValue)
+
+  })
   
 
   onUnmounted(() => {
@@ -386,8 +394,6 @@
             drawPolygon.value = data.features[0].geometry
 
             await mapStore.fetchBridges(drawPolygon.value);
-
-            console.log(mapStore.uniqueValues)
 
             refreshBridges()
 
@@ -520,7 +526,7 @@
     }
   }
 
-  const refreshBridges = () => {
+  const refreshBridges = (names=[]) => {
       clearLayer("bridges")
 
       map_instance.value.addSource("bridges", {
@@ -529,17 +535,39 @@
 
           });
 
-      map_instance.value.addLayer({
-              id: "bridges",
-              type: 'circle',
-              source: "bridges",
-              paint: {
-                  'circle-color' : '#FFFF00',
-                  'circle-radius': 4,
-                  'circle-stroke-color':"#000000",
-                  'circle-stroke-width':1
-              }
-        });
+      if (names.length > 0){
+        console.log("Filtering bridges by name")
+        console.log(names)
+        map_instance.value.addLayer({
+                id: "bridges",
+                type: 'circle',
+                source: "bridges",
+                paint: {
+                    'circle-color' : [
+                      'case',
+                      ['in', ['get', 'bridge_name'], ['literal', names]], '#FF0000',
+                      '#FFFF00'
+                    ],
+                    'circle-radius': 4,
+                    'circle-stroke-color':"#000000",
+                    'circle-stroke-width':1
+                }
+          });         
+      } else {
+
+        map_instance.value.addLayer({
+                id: "bridges",
+                type: 'circle',
+                source: "bridges",
+                paint: {
+                    'circle-color' : '#FFFF00',
+                    'circle-radius': 4,
+                    'circle-stroke-color':"#000000",
+                    'circle-stroke-width':1
+                }
+          });
+      }
+
   }
 
   const clearAllLayers = (clear_draw=false) => {
