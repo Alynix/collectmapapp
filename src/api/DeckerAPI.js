@@ -37,6 +37,10 @@ export default {
         }
 
         return await deckerAPI.post('v1/decker-bridges/geojson/', data);
+    },
+
+    async get_planclusters(plan_id){
+        return await deckerAPI.get(`v1/clusters/?plan_id=${plan_id}`);
     }
 
 

@@ -98,6 +98,32 @@ if(mapStore.selectedPlan){
                     'circle-stroke-width':1
                 }
           });
+
+  await mapStore.fetchPlanClusters(mapStore.selectedPlan.id);
+
+  clearLayer("clusters")
+
+  mapStore.mapbox_instance.addSource("clusters", {
+
+  type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
+  data: mapStore.planClustersPayload
+
+  });
+
+  mapStore.mapbox_instance.addLayer({
+                id: "clusters",
+                type: 'fill',
+                source: "clusters",
+                paint: {
+                    'fill-color' : [
+                      'case',
+                      ['==', ['get', 'saved'], true], '#FF0000',
+                      '#FFFF00'
+                    ],
+                    'fill-opacity': 0.5,
+                    'fill-outline-color': "#000000"
+                }
+          });
       
 
 }

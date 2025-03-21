@@ -167,6 +167,18 @@ export const useMapStore = defineStore("mapstore",() => {
 
     }
 
+    const planClustersPayload = ref([])
+
+    const fetchPlanClusters = async (plan_id) => {
+
+        let response = await deckerAPI.get_planclusters(plan_id);
+
+        console.log(response.data)
+
+        planClustersPayload.value = response.data
+
+    }
+
 
     return { mapbox_instance,
              map_mounted,
@@ -188,8 +200,10 @@ export const useMapStore = defineStore("mapstore",() => {
              uniqueValues,
              macroPlans,
              planColDefs,
+             planClustersPayload,
              fetchMacroPlans,
              fetchBridges,
-             addMacroPlan}
+             addMacroPlan,
+             fetchPlanClusters}
 
 });
