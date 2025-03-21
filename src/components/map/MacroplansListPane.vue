@@ -76,6 +76,30 @@ if(mapStore.selectedPlan){
           'fill-outline-color': "#000000"
       }
   });
+
+  await mapStore.fetchBridges(mapStore.drawPolygon);
+
+  clearLayer("bridges")
+
+  mapStore.mapbox_instance.addSource("bridges", {
+  type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
+  data: mapStore.bridgePayload
+
+  });
+
+  mapStore.mapbox_instance.addLayer({
+                id: "bridges",
+                type: 'circle',
+                source: "bridges",
+                paint: {
+                    'circle-color' : '#FFFF00',
+                    'circle-radius': 4,
+                    'circle-stroke-color':"#000000",
+                    'circle-stroke-width':1
+                }
+          });
+      
+
 }
 
 

@@ -344,18 +344,6 @@
                 .addTo(map_instance.value);
         });
 
-        map_instance.value.on('click', 'plan', (e) => {
-            
-            draw_instance.value.deleteAll()
-
-            draw_instance.value.add(e.features[0].geometry)
-
-            mapStore.showCounties = false
-
-            updateArea()
-
-        });
-
     })
 
     // register move and zoom events to persist map viewport
@@ -388,9 +376,7 @@
   watch(selectedBridgeNames, (newValue, oldValue) => {
     // updates bridge layer so selected bridges are in red
     refreshBridges(newValue)
-
   })
-  
 
   onUnmounted(() => {
     mapStore.map_mounted = false;
@@ -551,7 +537,6 @@
 
       if (names.length > 0){
         console.log("Filtering bridges by name")
-        console.log(names)
         map_instance.value.addLayer({
                 id: "bridges",
                 type: 'circle',
