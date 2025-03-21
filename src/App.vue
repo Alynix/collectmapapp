@@ -14,6 +14,7 @@ import CountyLayer from './components/map/USCounties.vue'
 import {useMapStore } from './stores/mapstore'
 
 import BridgesListPane from './components/map/BridgesListPane.vue'
+import MacroplansListPane from './components/map/MacroplansListPane.vue'
 
 
 const mapStore=useMapStore();
@@ -25,6 +26,7 @@ const mapStore=useMapStore();
     <MyMap>
       <template #left-sidebar>
         <BridgesListPane v-if="mapStore.isVisible"></BridgesListPane>
+        <MacroplansListPane v-if="!mapStore.isVisible & mapStore.showPlans"></MacroplansListPane>
       </template>
   
     </MyMap>

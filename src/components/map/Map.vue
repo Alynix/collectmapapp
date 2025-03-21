@@ -4,6 +4,10 @@
         <div class="flex-1 gap-2">
           <a class="bg-ghost text-xl">Bridge Collection Clusters</a>
 
+          <button class="btn btn-primary btn-xs" @click="resetSelectedPlan"> Macroplans </button>
+
+          <h2>{{ mapStore.selectedPlan ? mapStore.selectedPlan.id + "-" + mapStore.selectedPlan.name : "Select A Plan" }}</h2>
+
           <button class="btn btn-primary btn-xs"@click="mapStore.isVisible = !mapStore.isVisible"> Bridge Selection Tool </button>
           
           <button class="btn btn-neutral btn-xs"@click="resetView(planBBOX)"> Zoom to Region </button>
@@ -38,7 +42,7 @@
       
       <div class="divider"></div>
 
-        <div class="flex w-full flex-col" v-show="!mapStore.isVisible && showSchedule">
+        <div class="flex w-full flex-col" v-show="!mapStore.isVisible && !mapStore.showPlans && showSchedule">
           
           
 
@@ -229,6 +233,11 @@
     option.selected = !option.selected;
   };
 
+  const resetSelectedPlan = () => {
+    mapStore.showPlans = !mapStore.showPlans;
+    mapStore.selectedPlan = null;
+  }
+
   const selectedOptions = computed(() => {
     return options.value.filter((opt) => opt.selected).map((opt) => opt.name).join(", ") || "Select options";
   });
@@ -335,6 +344,18 @@
                 .addTo(map_instance.value);
         });
 
+        map_instance.value.on('click', 'plan', (e) => {
+            
+            draw_instance.value.deleteAll()
+
+            draw_instance.value.add(e.features[0].geometry)
+
+            mapStore.showCounties = false
+
+            updateArea()
+
+        });
+
     })
 
     // register move and zoom events to persist map viewport
@@ -344,12 +365,6 @@
 
 
   });
-
-  
-
-  watch(drawPolygon,(newValue,oldValue)=>{
-    //mapStore.sbAPP.properties = {EmbedGeoPolygon:newValue}
-  })
 
   //planArray = [totalPlanDays,planEndDate,tooManyClusters,allScheduleDates]
   const planArray = computed(() => {
@@ -371,8 +386,7 @@
   })
 
   watch(selectedBridgeNames, (newValue, oldValue) => {
-    console.log("Bridge names changed")
-
+    // updates bridge layer so selected bridges are in red
     refreshBridges(newValue)
 
   })
@@ -391,9 +405,9 @@
 
             bbox.value = turf.bbox(data)
 
-            drawPolygon.value = data.features[0].geometry
+            mapStore.drawPolygon = data.features[0].geometry
 
-            await mapStore.fetchBridges(drawPolygon.value);
+            await mapStore.fetchBridges(mapStore.drawPolygon);
 
             refreshBridges()
 

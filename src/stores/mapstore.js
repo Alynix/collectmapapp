@@ -15,6 +15,8 @@ export const useMapStore = defineStore("mapstore",() => {
     const showDraw = ref(true);
     const showMeasure = ref(false);
 
+    const showPlans = ref(true);
+
     const showBridges = ref(true);
     const showClusters = ref(true);
 
@@ -26,11 +28,17 @@ export const useMapStore = defineStore("mapstore",() => {
 
     const draw_data = ref(null)
 
+    const drawPolyon = ref(null)
+
     const isVisible = ref(false) // toggle embbedded Superblocks app visibility 
 
     const sbAPP = ref(null) // Superblocks app instance
 
     const macroPlans = ref([])
+
+    const selectedPlan = ref(null)
+
+    const planPayload = ref({})
 
     const fetchMacroPlans = async () => {
         let response = await deckerAPI.get_macroplans();
@@ -41,9 +49,25 @@ export const useMapStore = defineStore("mapstore",() => {
                 id: row.id,
                 name: row.name,
                 description: row.description,
+                cluster_count: row.cluster_count,
+                geometry: feature.geometry
             }
         });
+
+        planPayload.value = response.data;
     }
+
+    const addMacroPlan = async (data) => {
+        let response = await deckerAPI.create_macroplan(data);
+        fetchMacroPlans();
+    }
+
+    const planColDefs = ref([
+        { value: "id", text: "ID" },
+        { value: "name", text: "Name" },
+        { value: "description", text: "Description" },
+        { value: "cluster_count", text: "Cluster Count" },
+    ]);
 
     const localBridges = ref([])
 
@@ -73,7 +97,7 @@ export const useMapStore = defineStore("mapstore",() => {
 
     const bridgePayload = ref({})
 
-    const uniqueValues = ref({})
+    const uniqueValues = ref(null)
 
     const categories = ref(['deck_condition', 'lanes_on', 'route_type', 'structure_type', 'structure_kind', 'deck_structure_type', 'wearing_surface_type', 'owner'])
 
@@ -155,14 +179,17 @@ export const useMapStore = defineStore("mapstore",() => {
              showCounties,
              calcArea,
              mapboxdraw_instance,
-             draw_data,isVisible,
+             draw_data,
+             isVisible,
              localBridges,
              selectedBridges,
              bridgePayload,
              bridgeColDefs,
              uniqueValues,
              macroPlans,
+             planColDefs,
              fetchMacroPlans,
-             fetchBridges}
+             fetchBridges,
+             addMacroPlan}
 
 });

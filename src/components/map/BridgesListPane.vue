@@ -36,6 +36,8 @@ const trafficCriteria = ref([0,1000000]);
 
 const filterOptions = computed(() => {
   const filterOptionsArray = [];
+
+  if (!mapStore.uniqueValues) return filterOptionsArray;
   
   filterOptionsArray.push({
     field: 'deck_condition',
@@ -111,18 +113,7 @@ const filterOptions = computed(() => {
 
 <template>
   <div class="p-4 bg-base-200">
-    <h2 class="text-lg font-bold">Bridge</h2>
-    <span class="text-xs text-gray-400">Click on a bridge to see more details</span>
-    <div class="flex gap-2 py-4">
-      <div>
-        <div>{{mapStore.selectedBridges.length}}</div>
-        <div class="text-gray-400">selected</div>
-      </div>
-      <div>
-        <div>{{mapStore.localBridges.length}}</div>
-        <div class="text-gray-400">total</div>
-      </div>
-    </div>
+    <h2 class="text-lg font-bold">{{mapStore.localBridges.length}} Bridges, {{mapStore.selectedBridges.length}} selected</h2>
     </div>  
     <EasyDataTable
       :headers="mapStore.bridgeColDefs"
@@ -130,7 +121,8 @@ const filterOptions = computed(() => {
       :filter-options="filterOptions"
       :pagination="true"
       :rows-per-page="10"
-      v-model:items-selected="mapStore.selectedBridges" 
+      v-model:items-selected="mapStore.selectedBridges"
+      alternating 
     >
     <template #header-length_m="header">
       <div class="filter-column">
@@ -324,8 +316,5 @@ const filterOptions = computed(() => {
 
 <style scoped>
 
-.ag-theme-alpine, .ag-theme-balham {
-    --ag-font-size: 10px; /* Works in some cases */
-}
 
 </style>
