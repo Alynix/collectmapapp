@@ -99,6 +99,10 @@ export const useMapStore = defineStore("mapstore",() => {
 
     const uniqueValues = ref(null)
 
+    const lengthCriteria = ref([0,10000]);
+    const widthCriteria = ref([0,10000]);
+    const trafficCriteria = ref([0,1000000]);
+
     const categories = ref(['deck_condition', 'lanes_on', 'route_type', 'structure_type', 'structure_kind', 'deck_structure_type', 'wearing_surface_type', 'owner'])
 
     const fetchBridges = async (polygon) => {
@@ -173,7 +177,15 @@ export const useMapStore = defineStore("mapstore",() => {
 
         let response = await deckerAPI.get_planclusters(plan_id);
 
-        console.log(response.data)
+        planClustersPayload.value = response.data
+
+    }
+
+    const createPlanClusters = async (plan_id, data) => {
+
+        let response = await deckerAPI.cluster_bridges(plan_id, data);
+
+        console.log('clustering response', response.data)
 
         planClustersPayload.value = response.data
 
@@ -198,12 +210,16 @@ export const useMapStore = defineStore("mapstore",() => {
              bridgePayload,
              bridgeColDefs,
              uniqueValues,
+             lengthCriteria,
+             widthCriteria,
+             trafficCriteria,
              macroPlans,
              planColDefs,
              planClustersPayload,
              fetchMacroPlans,
              fetchBridges,
              addMacroPlan,
-             fetchPlanClusters}
+             fetchPlanClusters,
+             createPlanClusters}
 
 });

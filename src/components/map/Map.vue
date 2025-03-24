@@ -9,8 +9,8 @@
           <h2>{{ mapStore.selectedPlan ? mapStore.selectedPlan.id + "-" + mapStore.selectedPlan.name : "Select A Plan" }}</h2>
 
           <button class="btn btn-primary btn-xs"@click="mapStore.isVisible = !mapStore.isVisible"> Bridge Selection Tool </button>
-          
-          <button class="btn btn-neutral btn-xs"@click="resetView(planBBOX)"> Zoom to Region </button>
+
+          <button :class="['btn', mapStore.selectedBridges.length>0 && mapStore.selectedPlan ? 'btn-error' : 'btn-disabled','btn-xs']" @click="createPlanClusters"> Create Plan Clusters </button> 
 
 
         </div>
@@ -211,6 +211,8 @@
 
   const drawPolygon = ref(2);
 
+  const createDisabled = ref(false);
+
  
 
 
@@ -236,6 +238,23 @@
   const resetSelectedPlan = () => {
     mapStore.showPlans = !mapStore.showPlans;
     mapStore.selectedPlan = null;
+  }
+
+  async function createPlanClusters(){
+
+    const plan_id = mapStore.selectedPlan.id;
+
+    const cluster_params = {
+      bridge_names: selectedBridgeNames.value,
+      mode: 0,
+      dist: 1200,
+      saveClusters: true
+    }
+
+    await mapStore.createPlanClusters(plan_id,cluster_params);
+
+    refreshBridges()
+
   }
 
   const selectedOptions = computed(() => {
@@ -566,6 +585,35 @@
                 }
           });
       }
+
+
+      if(mapStore.planClustersPayload){
+
+        clearLayer("clusters")
+
+        map_instance.value.addSource("clusters", {
+        type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
+        data: mapStore.planClustersPayload
+
+            });
+
+        map_instance.value.addLayer({
+                id: "clusters",
+                type: 'fill',
+                source: "clusters",
+                paint: {
+                    'fill-color' : [
+                      'case',
+                      ['==', ['get', 'saved'], true], '#FF0000',
+                      '#FFFF00'
+                    ],
+                    'fill-opacity': 0.5,
+                    'fill-outline-color': "#000000"
+                }
+          });
+
+      }
+
 
   }
 

@@ -10,7 +10,8 @@ const mapStore = useMapStore();
 onMounted(async () => {
     //await mapStore.fetchMacroPlans();
 
-    
+    console.log('BridgeListPane mounted');
+    console.log(filterOptions.value);
 
 });
 
@@ -29,10 +30,6 @@ const showOwnerFilter = ref(false);
 const showLengthFilter = ref(false);
 const showWidthFilter = ref(false);
 const showAverageDailyTrafficFilter = ref(false);
-
-const lengthCriteria = ref([0,10000]);
-const widthCriteria = ref([0,10000]);
-const trafficCriteria = ref([0,1000000]);
 
 const filterOptions = computed(() => {
   const filterOptionsArray = [];
@@ -90,19 +87,19 @@ const filterOptions = computed(() => {
   filterOptionsArray.push({
     field: 'length_m',
     comparison: 'between',
-    criteria: lengthCriteria.value,
+    criteria: mapStore.lengthCriteria,
   });
 
   filterOptionsArray.push({
     field: 'width_m',
     comparison: 'between',
-    criteria: widthCriteria.value,
+    criteria: mapStore.widthCriteria,
   });
 
   filterOptionsArray.push({
     field: 'average_daily_traffic',
     comparison: 'between',
-    criteria: trafficCriteria.value,
+    criteria: mapStore.trafficCriteria,
   });
  
   return filterOptionsArray;
@@ -131,8 +128,8 @@ const filterOptions = computed(() => {
         </button>
         <div class="filter-menu filter-length_m-menu" v-if="showLengthFilter">
           <div class="flex items-center gap-2">
-            <input type="number" v-model="lengthCriteria[0]" class="input input-bordered input-xs w-16" />
-            <input type="number" v-model="lengthCriteria[1]" class="input input-bordered input-xs w-16" />
+            <input type="number" v-model="mapStore.lengthCriteria[0]" class="input input-bordered input-xs w-16" />
+            <input type="number" v-model="mapStore.lengthCriteria[1]" class="input input-bordered input-xs w-16" />
           </div>
         </div>
       </div>
@@ -144,8 +141,8 @@ const filterOptions = computed(() => {
         </button>
         <div class="filter-menu filter-width_m-menu" v-if="showWidthFilter">
           <div class="flex items-center gap-2">
-            <input type="number" v-model="widthCriteria[0]" class="input input-bordered input-xs w-16" />
-            <input type="number" v-model="widthCriteria[1]" class="input input-bordered input-xs w-16" />
+            <input type="number" v-model="mapStore.widthCriteria[0]" class="input input-bordered input-xs w-16" />
+            <input type="number" v-model="mapStore.widthCriteria[1]" class="input input-bordered input-xs w-16" />
           </div>
         </div>
       </div>
@@ -157,8 +154,8 @@ const filterOptions = computed(() => {
         </button>
         <div class="filter-menu filter-average_daily_traffic-menu" v-if="showAverageDailyTrafficFilter">
           <div class="flex items-center gap-2">
-            <input type="number" v-model="trafficCriteria[0]" class="input input-bordered input-xs w-16" />
-            <input type="number" v-model="trafficCriteria[1]" class="input input-bordered input-xs w-16" />
+            <input type="number" v-model="mapStore.trafficCriteria[0]" class="input input-bordered input-xs w-16" />
+            <input type="number" v-model="mapStore.trafficCriteria[1]" class="input input-bordered input-xs w-16" />
           </div>
         </div>
       </div>

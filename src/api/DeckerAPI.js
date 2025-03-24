@@ -41,7 +41,10 @@ export default {
 
     async get_planclusters(plan_id){
         return await deckerAPI.get(`v1/clusters/?plan_id=${plan_id}`);
-    }
+    },
 
+    async cluster_bridges(plan_id,data){
+        return await deckerAPI.post(`v1/clusters/bulk_create/?plan_id=${plan_id}`, data);
+    }
 
 }
