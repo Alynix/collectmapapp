@@ -54,84 +54,6 @@ const clearLayer = (tag) => {
     }
 }
 
-
-async function displayPlanPolygon() {
-
-if(mapStore.selectedPlan){
-  clearLayer("plan")
-
-  mapStore.mapbox_instance.addSource("plan", {
-  type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
-  data: mapStore.selectedPlan.geometry
-
-      });
-
-  mapStore.mapbox_instance.addLayer({
-      id: "plan",
-      type: 'fill',
-      source: "plan",
-      paint: {
-          'fill-color' : "#87CEEB",
-          'fill-opacity': 0.3,
-          'fill-outline-color': "#000000"
-      }
-  });
-
-  await mapStore.fetchBridges(mapStore.drawPolygon);
-
-  clearLayer("bridges")
-
-  mapStore.mapbox_instance.addSource("bridges", {
-  type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
-  data: mapStore.bridgePayload
-
-  });
-
-  mapStore.mapbox_instance.addLayer({
-                id: "bridges",
-                type: 'circle',
-                source: "bridges",
-                paint: {
-                    'circle-color' : '#FFFF00',
-                    'circle-radius': 4,
-                    'circle-stroke-color':"#000000",
-                    'circle-stroke-width':1
-                }
-          });
-
-  await mapStore.fetchPlanClusters(mapStore.selectedPlan.id);
-
-  clearLayer("clusters")
-
-  mapStore.mapbox_instance.addSource("clusters", {
-
-  type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
-  data: mapStore.planClustersPayload
-
-  });
-
-  mapStore.mapbox_instance.addLayer({
-                id: "clusters",
-                type: 'fill',
-                source: "clusters",
-                paint: {
-                    'fill-color' : [
-                      'case',
-                      ['==', ['get', 'saved'], true], '#FF0000',
-                      '#FFFF00'
-                    ],
-                    'fill-opacity': 0.5,
-                    'fill-outline-color': "#000000"
-                }
-          });
-      
-
-}
-
-
-
-}
-
 onMounted(async () => {
     await mapStore.fetchMacroPlans();
 
@@ -167,7 +89,7 @@ const showPlan = (plan) => {
 
     mapStore.drawPolygon = plan.geometry;
 
-    displayPlanPolygon();
+    mapStore.displayPlanPolygon();
 
     mapStore.showPlans = false;
 

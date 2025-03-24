@@ -49,6 +49,10 @@ export default {
 
     async cluster_bridges(plan_id,data){
         return await deckerAPI.post(`v1/clusters/bulk_create/?plan_id=${plan_id}`, data);
+    },
+
+    async delete_cluster(cluster_id){
+        return await deckerAPI.delete(`v1/clusters/${cluster_id}/`);
     }
 
 }

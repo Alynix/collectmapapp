@@ -150,8 +150,8 @@ function clearAllFilters(){
   });
 
   //reset all criteria to default
-  mapStore.lengthCriteria = [0, 1000];
-  mapStore.widthCriteria = [0, 1000];
+  mapStore.lengthCriteria = [0, 10000];
+  mapStore.widthCriteria = [0, 10000];
   mapStore.trafficCriteria = [0, 1000000];
 
 }

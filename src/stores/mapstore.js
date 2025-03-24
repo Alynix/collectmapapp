@@ -28,7 +28,7 @@ export const useMapStore = defineStore("mapstore",() => {
 
     const draw_data = ref(null)
 
-    const drawPolyon = ref(null)
+    const drawPolygon = ref(null)
 
     const isVisible = ref(false) // toggle embbedded Superblocks app visibility 
 
@@ -197,6 +197,93 @@ export const useMapStore = defineStore("mapstore",() => {
 
     }
 
+    const deleteCluster = async (cluster_id) => {
+
+        let response = await deckerAPI.delete_cluster(cluster_id);
+
+        console.log('delete cluster response', response.data)
+
+    }
+
+    const clearLayer = (tag) => {
+        if (mapbox_instance.value.getLayer(tag)) {
+          mapbox_instance.value.removeLayer(tag);
+        }
+    
+        if (mapbox_instance.value.getSource(tag)) {
+          mapbox_instance.value.removeSource(tag);
+        }
+      }
+
+    async function displayPlanPolygon() {
+
+        console.log('selected plan', selectedPlan.value)
+
+        if (selectedPlan.value) {
+            clearLayer("plan");
+
+            mapbox_instance.value.addSource("plan", {
+                type: 'geojson',
+                data: selectedPlan.value.geometry
+            });
+
+            mapbox_instance.value.addLayer({
+                id: "plan",
+                type: 'fill',
+                source: "plan",
+                paint: {
+                    'fill-color': "#87CEEB",
+                    'fill-opacity': 0.3,
+                    'fill-outline-color': "#000000"
+                }
+            });
+
+            await fetchBridges(drawPolygon.value);
+
+            clearLayer("bridges");
+
+            mapbox_instance.value.addSource("bridges", {
+                type: 'geojson',
+                data: bridgePayload.value
+            });
+
+            mapbox_instance.value.addLayer({
+                id: "bridges",
+                type: 'circle',
+                source: "bridges",
+                paint: {
+                    'circle-color': '#FFFF00',
+                    'circle-radius': 4,
+                    'circle-stroke-color': "#000000",
+                    'circle-stroke-width': 1
+                }
+            });
+
+            await fetchPlanClusters(selectedPlan.value.id);
+
+            clearLayer("clusters");
+
+            mapbox_instance.value.addSource("clusters", {
+                type: 'geojson',
+                data: planClustersPayload.value
+            });
+
+            mapbox_instance.value.addLayer({
+                id: "clusters",
+                type: 'fill',
+                source: "clusters",
+                paint: {
+                    'fill-color': [
+                        'case',
+                        ['==', ['get', 'saved'], true], '#FF0000',
+                        '#FFFF00'
+                    ],
+                    'fill-opacity': 0.5,
+                    'fill-outline-color': "#000000"
+                }
+            });
+        }
+    }
 
     return { mapbox_instance,
              map_mounted,
@@ -210,6 +297,7 @@ export const useMapStore = defineStore("mapstore",() => {
              calcArea,
              mapboxdraw_instance,
              draw_data,
+             drawPolygon,
              isVisible,
              localBridges,
              selectedBridges,
@@ -220,6 +308,7 @@ export const useMapStore = defineStore("mapstore",() => {
              widthCriteria,
              trafficCriteria,
              macroPlans,
+             selectedPlan,
              planColDefs,
              planClustersPayload,
              fetchMacroPlans,
@@ -227,6 +316,8 @@ export const useMapStore = defineStore("mapstore",() => {
              addMacroPlan,
              updateMacroPlan,
              fetchPlanClusters,
-             createPlanClusters}
+             createPlanClusters,
+             deleteCluster,
+             displayPlanPolygon}
 
 });

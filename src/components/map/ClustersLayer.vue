@@ -80,9 +80,12 @@ const checkSaved = (properties) => {
 
 const deleteCluster = (cluster_id) => {
 
-    mapStore.isVisible = true;
+    mapStore.deleteCluster(cluster_id)
 
-    mapStore.sbAPP.trigger('clusterDeleteButton', {"cluster_id":String(cluster_id)}) 
+    selectedCluster.value = null;
+
+    mapStore.displayPlanPolygon();
+
 }
 
 </script>

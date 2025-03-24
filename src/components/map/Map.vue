@@ -194,7 +194,6 @@
   import { useMapStore } from "@/stores/mapstore";
 
   const map_el = ref(null);
-  const map_instance = ref(null);
 
   const mapStore = useMapStore();
 
@@ -297,7 +296,7 @@
 
   onMounted(() => {
     
-    map_instance.value = new mapboxgl.Map({
+    mapStore.mapbox_instance = new mapboxgl.Map({
       container: map_el.value,
       style: 'mapbox://styles/mapbox/satellite-streets-v12', // Use your desired Mapbox style
       center: mapStore.mapCenter, 
@@ -310,7 +309,7 @@
     searchBoxElement.mapboxgl = mapboxgl
 
     // bind the search box instance to the map instance
-    searchBoxElement.bindMap(map_instance.value)
+    searchBoxElement.bindMap(mapStore.mapbox_instance)
     search_container_el.value.appendChild(searchBoxElement);
 
 
@@ -325,25 +324,24 @@
           // The user does not have to click the polygon control button first.
           defaultMode: 'draw_polygon'
     });
-    map_instance.value.addControl(draw_instance.value);
+    mapStore.mapbox_instance.addControl(draw_instance.value);
 
-    mapStore.mapbox_instance = map_instance;
     mapStore.mapboxdraw_instance = draw_instance;
 
     // ON LOAD
     mapStore.mapbox_instance.on("load",() => {
       mapStore.map_mounted = true;
 
-      map_instance.value.addSource("counties", {
+      mapStore.mapbox_instance.addSource("counties", {
         type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
         data: 'https://decker-public-hosting.s3.us-east-2.amazonaws.com/georef-united-states-of-america-county.geojson'
       });
 
-      map_instance.value.on('draw.create', updateArea);
-      map_instance.value.on('draw.delete', updateArea);
-      map_instance.value.on('draw.update', updateArea);
+      mapStore.mapbox_instance.on('draw.create', updateArea);
+      mapStore.mapbox_instance.on('draw.delete', updateArea);
+      mapStore.mapbox_instance.on('draw.update', updateArea);
 
-      map_instance.value.on('click', 'counties', (e) => {
+      mapStore.mapbox_instance.on('click', 'counties', (e) => {
             
             draw_instance.value.deleteAll()
 
@@ -362,14 +360,14 @@
             new mapboxgl.Popup()
                 .setLngLat(e.lngLat)
                 .setHTML(msg)
-                .addTo(map_instance.value);
+                .addTo(mapStore.mapbox_instance);
         });
 
     })
 
     // register move and zoom events to persist map viewport
-    map_instance.value.on('move', (e) => {
-      storeViewport(map_instance.value.getCenter(), map_instance.value.getZoom())
+    mapStore.mapbox_instance.on('move', (e) => {
+      storeViewport(mapStore.mapbox_instance.getCenter(), mapStore.mapbox_instance.getZoom())
     })
 
 
@@ -434,7 +432,7 @@
 
   // Function to zoom to coordinates
   function zoomToCoordinates(lng, lat, zoomLevel=15) {
-    map_instance.value.flyTo({
+    mapStore.mapbox_instance.flyTo({
       center: [lng, lat],
       zoom: zoomLevel
     });
@@ -444,7 +442,7 @@
 
     mapStore.isVisible = false;
 
-    map_instance.value.fitBounds(view_bbox)
+    mapStore.mapbox_instance.fitBounds(view_bbox)
   }
 
   const handleEvent = (eventName, payload) => {
@@ -470,13 +468,13 @@
         
         numBridges.value = bridge_count;
 
-        map_instance.value.addSource("clusters", {
+        mapStore.mapbox_instance.addSource("clusters", {
         type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
         data: payload.clusters
 
             });
 
-        map_instance.value.addLayer({
+        mapStore.mapbox_instance.addLayer({
                 id: "clusters",
                 type: 'fill',
                 source: "clusters",
@@ -497,13 +495,13 @@
         //add layer for the polygon of current macro plan
         clearLayer("plan")
 
-        map_instance.value.addSource("plan", {
+        mapStore.mapbox_instance.addSource("plan", {
         type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
         data: payload.plan
 
             });
 
-        map_instance.value.addLayer({
+        mapStore.mapbox_instance.addLayer({
             id: "plan",
             type: 'fill',
             source: "plan",
@@ -538,19 +536,19 @@
   }
 
   const clearLayer = (tag) => {
-    if (map_instance.value.getLayer(tag)) {
-      map_instance.value.removeLayer(tag);
+    if (mapStore.mapbox_instance.getLayer(tag)) {
+      mapStore.mapbox_instance.removeLayer(tag);
     }
 
-    if (map_instance.value.getSource(tag)) {
-      map_instance.value.removeSource(tag);
+    if (mapStore.mapbox_instance.getSource(tag)) {
+      mapStore.mapbox_instance.removeSource(tag);
     }
   }
 
   const refreshBridges = (names=[]) => {
       clearLayer("bridges")
 
-      map_instance.value.addSource("bridges", {
+      mapStore.mapbox_instance.addSource("bridges", {
       type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
       data: mapStore.bridgePayload
 
@@ -558,7 +556,7 @@
 
       if (names.length > 0){
         console.log("Filtering bridges by name")
-        map_instance.value.addLayer({
+        mapStore.mapbox_instance.addLayer({
                 id: "bridges",
                 type: 'circle',
                 source: "bridges",
@@ -575,7 +573,7 @@
           });         
       } else {
 
-        map_instance.value.addLayer({
+        mapStore.mapbox_instance.addLayer({
                 id: "bridges",
                 type: 'circle',
                 source: "bridges",
@@ -593,13 +591,13 @@
 
         clearLayer("clusters")
 
-        map_instance.value.addSource("clusters", {
+        mapStore.mapbox_instance.addSource("clusters", {
         type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
         data: mapStore.planClustersPayload
 
             });
 
-        map_instance.value.addLayer({
+        mapStore.mapbox_instance.addLayer({
                 id: "clusters",
                 type: 'fill',
                 source: "clusters",
