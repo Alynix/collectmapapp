@@ -21,7 +21,7 @@ const newPlan = ref({
 const createPlan = () => {
 
   if(mapStore.drawPolygon){
-    newPlan.value.geom = mapStore.drawPolygon.coordinates[0];
+    newPlan.value.geometry = mapStore.drawPolygon.coordinates[0];
 
     if (newPlan.value.name && newPlan.value.description) {
         mapStore.addMacroPlan(newPlan.value); // Assuming `addMacroPlan` exists in the store

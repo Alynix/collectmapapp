@@ -257,6 +257,8 @@
 
   }
 
+  
+
   const selectedOptions = computed(() => {
     return options.value.filter((opt) => opt.selected).map((opt) => opt.name).join(", ") || "Select options";
   });

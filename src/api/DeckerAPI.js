@@ -30,6 +30,10 @@ export default {
         return await deckerAPI.post('v1/macroplans/', data);
     },
 
+    async update_macroplan(id,data){
+        return await deckerAPI.put(`v1/macroplans/${id}/`, data);
+    },
+
     async get_bridges(polygon){
 
         const data = {

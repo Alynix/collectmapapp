@@ -105,12 +105,71 @@ const filterOptions = computed(() => {
   return filterOptionsArray;
 });
 
+
+async function savePlanBridgeFilters(){
+
+const plan_id = mapStore.selectedPlan.id;
+
+const data_update = {
+  bridge_filters: filterOptions.value
+}
+
+await mapStore.updateMacroPlan(plan_id,data_update);
+
+}
+
+function applyPlanFilters(){
+
+  //edit uniqueValues based on saved filters on the macroplan
+
+  mapStore.selectedPlan.bridge_filters.forEach((filter) => {
+    if (filter.comparison === 'in') {
+      mapStore.uniqueValues[filter.field].forEach(option => {
+      option.selected = filter.criteria.includes(option.value);
+      });
+    } else if (filter.comparison === 'between') {
+      if (filter.field === 'length_m') {
+      mapStore.lengthCriteria = filter.criteria;
+      } else if (filter.field === 'width_m') {
+      mapStore.widthCriteria = filter.criteria;
+      } else if (filter.field === 'average_daily_traffic') {
+      mapStore.trafficCriteria = filter.criteria;
+      }
+    }
+  })
+
+}
+
+function clearAllFilters(){
+
+  //reset all uniqueValues to selected = true
+  Object.keys(mapStore.uniqueValues).forEach((key) => {
+    mapStore.uniqueValues[key].forEach(option => {
+      option.selected = true;
+    });
+  });
+
+  //reset all criteria to default
+  mapStore.lengthCriteria = [0, 1000];
+  mapStore.widthCriteria = [0, 1000];
+  mapStore.trafficCriteria = [0, 1000000];
+
+}
+
+
+
 </script>
 
 
 <template>
   <div class="p-4 bg-base-200">
     <h2 class="text-lg font-bold">{{mapStore.localBridges.length}} Bridges, {{mapStore.selectedBridges.length}} selected</h2>
+    <button :class="['btn', mapStore.selectedBridges.length>0 && mapStore.selectedPlan ? 'btn-error' : 'btn-disabled','btn-xs']" @click="savePlanBridgeFilters"> Save Current Filters </button> 
+
+    <button :class="['btn', mapStore.localBridges.length>0 && mapStore.selectedPlan ? 'btn-error' : 'btn-disabled','btn-xs']" @click="applyPlanFilters"> Reapply Plan Filters </button> 
+
+    <button :class="['btn', mapStore.localBridges.length>0 && mapStore.selectedPlan ? 'btn-error' : 'btn-disabled','btn-xs']" @click="clearAllFilters"> Clear All Filters </button>
+
     </div>  
     <EasyDataTable
       :headers="mapStore.bridgeColDefs"

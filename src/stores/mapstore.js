@@ -50,6 +50,7 @@ export const useMapStore = defineStore("mapstore",() => {
                 name: row.name,
                 description: row.description,
                 cluster_count: row.cluster_count,
+                bridge_filters: row.bridge_filters,
                 geometry: feature.geometry
             }
         });
@@ -59,6 +60,11 @@ export const useMapStore = defineStore("mapstore",() => {
 
     const addMacroPlan = async (data) => {
         let response = await deckerAPI.create_macroplan(data);
+        fetchMacroPlans();
+    }
+
+    const updateMacroPlan = async (id, data) => {
+        let response = await deckerAPI.update_macroplan(id, data);
         fetchMacroPlans();
     }
 
@@ -219,6 +225,7 @@ export const useMapStore = defineStore("mapstore",() => {
              fetchMacroPlans,
              fetchBridges,
              addMacroPlan,
+             updateMacroPlan,
              fetchPlanClusters,
              createPlanClusters}
 
