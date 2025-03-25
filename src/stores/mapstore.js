@@ -200,6 +200,8 @@ export const useMapStore = defineStore("mapstore",() => {
 
     const showClusterTable = ref(false);
 
+    const selectedClusters = ref([])
+
     const fetchPlanClusters = async (plan_id) => {
 
         let response = await deckerAPI.get_planclusters(plan_id);
@@ -225,7 +227,7 @@ export const useMapStore = defineStore("mapstore",() => {
 
     const clusterColDefs = ref([
         { value: "plan_id", text: "Plan ID" },
-        { value: "cluster_id", text: "Cluster ID" },
+        { value: "cluster_id", text: "Cluster ID", sortable: true},
         { value: "size", text: "Size" , sortable: true},
         { value: "bridge_names", text: "Bridge Names" },
         { value: "estimated_time", text: "Estimated Time (minutes)" , sortable: true},
@@ -235,8 +237,6 @@ export const useMapStore = defineStore("mapstore",() => {
 
         let response = await deckerAPI.cluster_bridges(plan_id, data);
 
-        console.log('clustering response', response.data)
-
         planClustersPayload.value = response.data
 
     }
@@ -244,8 +244,6 @@ export const useMapStore = defineStore("mapstore",() => {
     const deleteCluster = async (cluster_id) => {
 
         let response = await deckerAPI.delete_cluster(cluster_id);
-
-        console.log('delete cluster response', response.data)
 
     }
 
@@ -260,8 +258,6 @@ export const useMapStore = defineStore("mapstore",() => {
       }
 
     async function displayPlanPolygon() {
-
-        console.log('selected plan', selectedPlan.value)
 
         if (selectedPlan.value) {
             clearLayer("plan");
@@ -357,6 +353,7 @@ export const useMapStore = defineStore("mapstore",() => {
              planClustersPayload,
              planClusterRows,
              clusterColDefs,
+             selectedClusters,
              showClusterTable,
              fetchMacroPlans,
              fetchBridges,

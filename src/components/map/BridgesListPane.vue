@@ -10,9 +10,6 @@ const mapStore = useMapStore();
 onMounted(async () => {
     //await mapStore.fetchMacroPlans();
 
-    console.log('BridgeListPane mounted');
-    console.log(filterOptions.value);
-
 });
 
 onUnmounted(() => {

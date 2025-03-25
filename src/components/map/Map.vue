@@ -565,7 +565,7 @@
           });
 
       if (names.length > 0){
-        console.log("Filtering bridges by name")
+
         mapStore.mapbox_instance.addLayer({
                 id: "bridges",
                 type: 'circle',
