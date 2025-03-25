@@ -121,11 +121,6 @@ const deleteCluster = (cluster_id) => {
                     <div>{{selectedCluster.properties['clusterSize']}}</div>
                     <div class="text-gray-400"> Bridge Count </div>
                 </div>
-                <div>
-                    <div>{{selectedCluster.properties['bridge_names']}}</div>
-                    <div class="text-gray-400"> Bridges</div>
-                </div>
-
             </div>
 
             <span>

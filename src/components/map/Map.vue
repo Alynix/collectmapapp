@@ -12,6 +12,7 @@
 
           <button :class="['btn', mapStore.selectedBridges.length>0 && mapStore.selectedPlan ? 'btn-error' : 'btn-disabled','btn-xs']" @click="createPlanClusters"> Create Plan Clusters </button> 
 
+          <button :class="['btn', mapStore.planClusterRows.length>0 ? 'btn-secondary' : 'btn-disabled','btn-xs']" @click="mapStore.showClusterTable=!mapStore.showClusterTable"> Cluster Table View </button> 
 
         </div>
         <div class="flex gap-2">
@@ -42,7 +43,7 @@
       
       <div class="divider"></div>
 
-        <div class="flex w-full flex-col" v-show="!mapStore.isVisible && !mapStore.showPlans && showSchedule">
+        <div class="flex w-full flex-col" v-show="!mapStore.isVisible && !mapStore.showPlans && !mapStore.showClusterTable && showSchedule">
           
           
 

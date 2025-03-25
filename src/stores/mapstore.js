@@ -194,13 +194,40 @@ export const useMapStore = defineStore("mapstore",() => {
 
     const planClustersPayload = ref([])
 
+    const planClusterRows = ref([])
+
+    const showClusterTable = ref(false);
+
     const fetchPlanClusters = async (plan_id) => {
 
         let response = await deckerAPI.get_planclusters(plan_id);
 
         planClustersPayload.value = response.data
 
+        planClusterRows.value = response.data.features.map((feature) => {
+            const row = feature.properties;
+
+            return {
+                plan_id: row.macro_plan,
+                cluster_id: row.cluster_id,
+                size: row.clusterSize,
+                bridge_names: row.bridge_names,
+                estimated_time: Math.round(row.estimated_time/60),
+                longitude: row.longitude,
+                latitude: row.latitude,
+            }
+        }
+        );
+
     }
+
+    const clusterColDefs = ref([
+        { value: "plan_id", text: "Plan ID" },
+        { value: "cluster_id", text: "Cluster ID" },
+        { value: "size", text: "Size" , sortable: true},
+        { value: "bridge_names", text: "Bridge Names" },
+        { value: "estimated_time", text: "Estimated Time (minutes)" , sortable: true},
+    ]);
 
     const createPlanClusters = async (plan_id, data) => {
 
@@ -326,6 +353,9 @@ export const useMapStore = defineStore("mapstore",() => {
              selectedPlan,
              planColDefs,
              planClustersPayload,
+             planClusterRows,
+             clusterColDefs,
+             showClusterTable,
              fetchMacroPlans,
              fetchBridges,
              addMacroPlan,
