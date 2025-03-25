@@ -10,6 +10,8 @@ const mapStore = useMapStore();
 // Ref to control modal visibility
 const isModalOpen = ref(false);
 
+const numberInput = ref(0);
+
 // Form data
 const newPlan = ref({
   name: '',
@@ -108,6 +110,11 @@ const showPlan = (plan) => {
   <div class="join join-horizontal gap-2 p-4 bg-base-200">
       <h2 class="text-lg font-bold">Macroplans</h2>
       <button class="btn btn-primary btn-xs" @click="isModalOpen = true">New Plan</button>
+      <button class="btn btn-xs">
+                        <span @click="mapStore.deleteMacroPlan(numberInput)">Delete Plan </span>
+                        <input type="number" v-model="numberInput" class="w-10 h-6 text-black" />
+       </button>
+      <button class="btn btn-primary btn-xs" @click="mapStore.showPlans = false">Close</button>
   </div> 
     <EasyDataTable
       :headers="mapStore.planColDefs"

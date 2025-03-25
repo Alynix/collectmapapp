@@ -30,6 +30,10 @@ export default {
         return await deckerAPI.post('v1/macroplans/', data);
     },
 
+    async delete_macroplan(id){
+        return await deckerAPI.delete(`v1/macroplans/${id}/`);
+    },
+
     async update_macroplan(id,data){
         return await deckerAPI.put(`v1/macroplans/${id}/`, data);
     },

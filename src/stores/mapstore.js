@@ -68,6 +68,21 @@ export const useMapStore = defineStore("mapstore",() => {
         fetchMacroPlans();
     }
 
+    const deleteMacroPlan = async (id) => {
+
+        //loop current macoPlans, make sure the id is listed 
+
+        const check = macroPlans.value.filter((plan) => plan.id === id);
+
+        if (check.length > 0) {
+            let response = await deckerAPI.delete_macroplan(id);
+            fetchMacroPlans();
+        }
+
+
+        
+    }
+
     const planColDefs = ref([
         { value: "id", text: "ID" },
         { value: "name", text: "Name" },
@@ -314,6 +329,7 @@ export const useMapStore = defineStore("mapstore",() => {
              fetchMacroPlans,
              fetchBridges,
              addMacroPlan,
+             deleteMacroPlan,
              updateMacroPlan,
              fetchPlanClusters,
              createPlanClusters,
