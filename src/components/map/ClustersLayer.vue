@@ -88,6 +88,8 @@ const cluster_params = {
 
 await mapStore.createPlanClusters(plan_id,cluster_params);
 
+mapStore.drawPolygon = mapStore.selectedPlan.geometry;
+
 mapStore.displayPlanPolygon();
 
 }
@@ -97,6 +99,8 @@ const deleteCluster = (cluster_id) => {
     mapStore.deleteCluster(cluster_id)
 
     selectedCluster.value = null;
+
+    mapStore.drawPolygon = mapStore.selectedPlan.geometry;
 
     mapStore.displayPlanPolygon();
 
@@ -126,10 +130,13 @@ const deleteCluster = (cluster_id) => {
 
             <span>
                     <button class="bg-orange-500 mx-2 p-2 text-xs rounded-md">
-                        <span @click="splitCluster(selectedCluster.properties['bridge_names'])">Split Cluster</span>
+                        <span @click="splitCluster(selectedCluster.properties['bridge_names'])">Split</span>
                     </button>
                     <button class="bg-red-500 mx-2 p-2 text-xs rounded-md">
-                        <span @click="deleteCluster(selectedCluster.id)">Delete Cluster</span>
+                        <span @click="deleteCluster(selectedCluster.id)">Delete</span>
+                    </button>
+                    <button class="bg-green-500 mx-2 p-2 text-xs rounded-md">
+                        <span @click="selectedCluster = null">Close</span>
                     </button>
             </span>
 

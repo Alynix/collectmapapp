@@ -72,12 +72,79 @@ const showApp = () => {
     mapStore.isVisible = true;
 }
 
-const buttonAction = (properties) => {
-    if (properties['inCluster'] == true) {
-        return "Remove from Cluster"
-    } else {
-        return "Add to "
+async function remakeCluster(new_bridge_names){
+
+const plan_id = mapStore.selectedPlan.id;
+
+const numberInput = ref(0);
+
+const cluster_params = {
+  bridge_names: new_bridge_names,
+  mode: 1,
+  Kclusters: 1,
+  saveClusters: true
+}
+
+await mapStore.createPlanClusters(plan_id,cluster_params);
+
+mapStore.drawPolygon = mapStore.selectedPlan.geometry;
+
+mapStore.displayPlanPolygon();
+
+}
+
+const removeBridgeFromCluster = (bridge_name) => {
+    
+    //loop mapStore.planClustersPayload to find cluster which contains the bridge
+    const cluster = mapStore.planClustersPayload.features.filter((cluster) => {
+        return cluster.properties['bridge_names'].includes(bridge_name)
+    })
+
+    if (cluster.length == 0){
+        return
     }
+
+    const cluster_id = cluster[0]['id']
+
+    console.log(cluster_id)
+    console.log(bridge_name)
+
+    const filtered_bridge_names = cluster[0].properties['bridge_names'].filter((name) => {
+        return name != bridge_name
+    })
+
+    console.log(filtered_bridge_names)
+
+    remakeCluster(filtered_bridge_names)
+ 
+}
+
+const addBridgeToCluster = (bridge_name) => {
+
+    console.log('Adding bridge to cluster')
+
+    //loop mapStore.planClustersPayload to find cluster which contains the bridge
+    const cluster = mapStore.planClustersPayload.features.filter((cluster) => {
+        return cluster['id'] == numberInput.value
+    })
+
+    if (cluster.length == 0){
+        return
+    }
+
+    const cluster_id = cluster[0]['id']
+
+    console.log(cluster_id)
+    console.log(bridge_name)
+
+    const filtered_bridge_names = cluster[0].properties['bridge_names']
+
+    filtered_bridge_names.push(bridge_name)
+
+    console.log(filtered_bridge_names)
+
+    remakeCluster(filtered_bridge_names)
+
 }
 
 </script>
@@ -90,6 +157,13 @@ const buttonAction = (properties) => {
                     <div>{{selectedBridge.properties['bridge_name']}}</div>
                     <button class="btn btn-warning btn-xs">
                         <span @click=""><a v-bind:href="url" target="_blank">Street View</a></span>
+                    </button>
+                    <button class="btn btn-error btn-xs">
+                        <span @click="removeBridgeFromCluster(selectedBridge.properties['bridge_name'])"> Remove </span>
+                    </button>
+                    <button class="btn btn-xs">
+                        <span @click="addBridgeToCluster(selectedBridge.properties['bridge_name'])">Add to cluster: </span>
+                        <input type="number" v-model="numberInput" class="w-10 h-6 text-black" />
                     </button>
                 </div> 
             </span>
