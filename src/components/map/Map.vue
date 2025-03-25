@@ -245,7 +245,7 @@
 
     const cluster_params = {
       bridge_names: selectedBridgeNames.value,
-      mode: 0,
+      mode: 2,   // 0 dist based, 1 kmeans, 2 time based
       dist: 1200,
       saveClusters: true
     }
@@ -275,9 +275,6 @@
 
   const allValidDates = ref([]); // Array to store all valid collection days
   const allScheduleDates = ref([]); // Array to store hypothetical date/system pairs
-  
-  const numClusters = ref(0); // Number of clusters
-  const numBridges = ref(0); // Number of bridges
 
   const collectEfficiency = ref(0.5); // Efficiency of collection
 
@@ -397,6 +394,29 @@
     refreshBridges(newValue)
   })
 
+  const numClusters = computed(
+    () => mapStore.planClustersPayload.features ? mapStore.planClustersPayload.features.length : 0
+  )
+
+  const numBridges = computed(
+    () => {
+
+      let bridge_count = 0;
+
+      if (!mapStore.planClustersPayload.features){
+        return bridge_count
+      }
+
+      //loop clusters to count all bridges
+      mapStore.planClustersPayload.features.forEach((cluster) => {
+        bridge_count += cluster.properties.bridge_names.length
+      })
+
+      return bridge_count
+
+    }
+  )
+
   onUnmounted(() => {
     mapStore.map_mounted = false;
 
@@ -449,24 +469,13 @@
 
     switch(eventName){
 
-      case "bridgesReturned":
-
-        
-
-        break;
       case "clustersReturned":
         
         clearLayer("clusters")
 
-        numClusters.value = payload.clusters.features.length
-
-        let bridge_count = 0;
-        //loop clusters to count all bridges
-        payload.clusters.features.forEach((cluster) => {
-          bridge_count += cluster.properties.bridges.length
-        })
         
-        numBridges.value = bridge_count;
+
+        
 
         mapStore.mapbox_instance.addSource("clusters", {
         type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)

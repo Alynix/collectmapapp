@@ -27,9 +27,6 @@ const createPlan = () => {
 
     if (newPlan.value.name && newPlan.value.description) {
         mapStore.addMacroPlan(newPlan.value); // Assuming `addMacroPlan` exists in the store
-        console.log(newPlan.value.name);
-        console.log(newPlan.value.description);
-        console.log(newPlan.value.geom);
         newPlan.value.name = '';
         newPlan.value.description = '';
         isModalOpen.value = false; // Close the modal
@@ -100,7 +97,6 @@ const showPlan = (plan) => {
     mapStore.selectedPlan = null;
   }
   
-  console.log(mapStore.selectedPlan);
 };
 
 </script>
