@@ -156,6 +156,21 @@ function clearAllFilters(){
 
 }
 
+// Function to zoom to coordinates
+function zoomToCoordinates(lng, lat, zoomLevel=17) {
+    mapStore.mapbox_instance.flyTo({
+      center: [lng, lat],
+      zoom: zoomLevel
+    });
+}
+
+const bridgeRowClick = (row) => {
+
+    mapStore.isVisible = false;
+
+    zoomToCoordinates(row.longitude, row.latitude);
+}
+
 
 
 </script>
@@ -178,6 +193,7 @@ function clearAllFilters(){
       :pagination="true"
       :rows-per-page="10"
       v-model:items-selected="mapStore.selectedBridges"
+      @click-row="bridgeRowClick"
       alternating 
     >
     <template #header-length_m="header">

@@ -154,6 +154,8 @@ export const useMapStore = defineStore("mapstore",() => {
                 year_adt: row.year_adt,
                 features_description: row.features_description,
                 source_name: row.source_name,
+                longitude: row.longitude,
+                latitude: row.latitude,
             };
         });
 
