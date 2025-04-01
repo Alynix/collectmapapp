@@ -1,35 +1,26 @@
 <template>
 
-    <div class="navbar bg-base-100 shadow-sm">
-        <div class="flex-1 gap-2">
-          <a class="bg-ghost text-xl">Bridge Collection Clusters</a>
+    <div class="map-menu">
+        <ul class="menu bg-base-200 rounded-box gap-2 w-48">
+            <li><button class="btn btn-primary btn-xs" @click="resetSelectedPlan"> Macroplans </button></li>
+            <li><h2>{{ mapStore.selectedPlan ? mapStore.selectedPlan.id + "-" + mapStore.selectedPlan.name : "Select A Plan" }}</h2></li>
+            <li><button class="btn btn-primary btn-xs" @click="mapStore.isVisible = !mapStore.isVisible"> Bridge Selection Tool </button></li>
+            <li><button :class="['btn', mapStore.selectedBridges.length>0 && mapStore.selectedPlan ? 'btn-error' : 'btn-disabled','btn-xs']" @click="createPlanClusters"> Create Plan Clusters </button></li>
+            <li><button :class="['btn', mapStore.planClusterRows.length>0 ? 'btn-secondary' : 'btn-disabled','btn-xs']" @click="mapStore.showClusterTable=!mapStore.showClusterTable"> Cluster Table View </button></li>
+            
+            <div class="dropdown dropdown-right dropdown-end">
+                <div tabindex="0" role="button" class="btn m-1">Map Layers ➡️</div>
+                <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
+                <li><button :class="['btn', mapStore.showMeasure ? 'btn-warning' : 'btn-error','btn-xs']" @click="mapStore.showMeasure = !mapStore.showMeasure"> <span v-show="!mapStore.showMeasure">Show</span> <span v-show="mapStore.showMeasure">Hide</span> Measure Tool </button></li>
+                <li><button :class="['btn', showSchedule ? 'btn-warning' : 'btn-success','btn-xs']" @click="showSchedule = !showSchedule"> <span v-show="!showSchedule">Show</span> <span v-show="showSchedule">Hide</span> Esimator </button></li>
+                <li><button :class="['btn', mapStore.showBridges ? 'btn-warning' : 'btn-success','btn-xs']" @click="mapStore.showBridges = !mapStore.showBridges"> <span v-show="!mapStore.showBridges">Show</span> <span v-show="mapStore.showBridges">Hide</span> Bridges </button></li>
+                <li><button :class="['btn', mapStore.showClusters ? 'btn-warning' : 'btn-success','btn-xs']" @click="mapStore.showClusters = !mapStore.showClusters"> <span v-show="!mapStore.showClusters">Show</span> <span v-show="mapStore.showClusters">Hide</span> Clusters </button></li>
+                <li><button :class="['btn', mapStore.showCounties ? 'btn-warning' : 'btn-success','btn-xs']" @click="mapStore.showCounties = !mapStore.showCounties"> <span v-show="!mapStore.showCounties">Show</span> <span v-show="mapStore.showCounties">Hide</span> Counties </button></li>
+                <li><button class="btn btn-warn btn-xs" @click="clearAllLayers(clear_draw=true)"> Clear Map </button></li>
+            </ul>
+            </div>
 
-          <button class="btn btn-primary btn-xs" @click="resetSelectedPlan"> Macroplans </button>
-
-          <h2>{{ mapStore.selectedPlan ? mapStore.selectedPlan.id + "-" + mapStore.selectedPlan.name : "Select A Plan" }}</h2>
-
-          <button class="btn btn-primary btn-xs"@click="mapStore.isVisible = !mapStore.isVisible"> Bridge Selection Tool </button>
-
-          <button :class="['btn', mapStore.selectedBridges.length>0 && mapStore.selectedPlan ? 'btn-error' : 'btn-disabled','btn-xs']" @click="createPlanClusters"> Create Plan Clusters </button> 
-
-          <button :class="['btn', mapStore.planClusterRows.length>0 ? 'btn-secondary' : 'btn-disabled','btn-xs']" @click="mapStore.showClusterTable=!mapStore.showClusterTable"> Cluster Table View </button> 
-
-        </div>
-        <div class="flex gap-2">
-
-          <button :class="['btn', mapStore.showMeasure ? 'btn-warning' : 'btn-error','btn-xs']" @click="mapStore.showMeasure = !mapStore.showMeasure"> <span v-show="!mapStore.showMeasure">Show</span> <span v-show="mapStore.showMeasure">Hide</span> Measure Tool </button>
-
-          <button :class="['btn', showSchedule ? 'btn-warning' : 'btn-success','btn-xs']" @click="showSchedule = !showSchedule"> <span v-show="!showSchedule">Show</span> <span v-show="showSchedule">Hide</span> Esimator </button>
-          
-          <button :class="['btn', mapStore.showBridges ? 'btn-warning' : 'btn-success','btn-xs']" @click="mapStore.showBridges = !mapStore.showBridges"> <span v-show="!mapStore.showBridges">Show</span> <span v-show="mapStore.showBridges">Hide</span> Bridges </button>
-
-          <button :class="['btn', mapStore.showClusters ? 'btn-warning' : 'btn-success','btn-xs']" @click="mapStore.showClusters = !mapStore.showClusters"> <span v-show="!mapStore.showClusters">Show</span> <span v-show="mapStore.showClusters">Hide</span> Clusters </button>
-        
-          <button :class="['btn', mapStore.showCounties ? 'btn-warning' : 'btn-success','btn-xs']" @click="mapStore.showCounties = !mapStore.showCounties"> <span v-show="!mapStore.showCounties">Show</span> <span v-show="mapStore.showCounties">Hide</span> Counties </button>
-
-          <button class="btn btn-warn btn-xs" @click="clearAllLayers(clear_draw=true)"> Clear Map </button>
-
-        </div>
+        </ul>
 
     </div>
 
@@ -658,14 +649,13 @@
     height: 100vh;
 }
 
-.sb-container {
+.map-menu {
   position: absolute;
-  bottom: 12px;
-  left: 15px;
-  width: 98%;
-  height: 90%;
-  background: #000;
-  color: #FFF;
+  bottom: 40px;
+  left: 10px;
+  width: 100%;
+  max-width: 800px;
+  z-index: 200;
 }
 
 .map-left-sidebar {
