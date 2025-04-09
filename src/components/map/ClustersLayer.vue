@@ -64,25 +64,46 @@ onUnmounted(() => {
 
 })
 
-const triggerModalOpen = (cluster_id) => {
-    
-    mapStore.isVisible = true;
-    mapStore.sbAPP.trigger('openClusterModal', {"cluster_id":String(cluster_id)}) 
 
+
+async function splitCluster(names){
+
+const plan_id = mapStore.selectedPlan.id;
+
+//convert names from string to array
+names = names.split(',');
+
+//strip brackets
+names = names.map(name => name.replace(/[\[\]']+/g, ''));
+
+//strip double quotes
+names = names.map(name => name.replace(/['"]+/g, ''));
+
+const cluster_params = {
+  bridge_names: names,
+  mode: 1,
+  Kclusters: 2,
+  saveClusters: true
 }
 
-const checkSaved = (properties) => {
-    if (properties['saved'] == true){
-        return true
-    }
-    return false
+await mapStore.createPlanClusters(plan_id,cluster_params);
+
+mapStore.drawPolygon = mapStore.selectedPlan.geometry;
+
+mapStore.displayPlanPolygon();
+
 }
 
 const deleteCluster = (cluster_id) => {
 
-    mapStore.isVisible = true;
+    mapStore.deleteCluster(cluster_id)
 
-    mapStore.sbAPP.trigger('clusterDeleteButton', {"cluster_id":String(cluster_id)}) 
+    selectedCluster.value = null;
+
+    mapStore.drawPolygon = mapStore.selectedPlan.geometry;
+
+    mapStore.displayPlanPolygon();
+
 }
 
 </script>
@@ -100,19 +121,17 @@ const deleteCluster = (cluster_id) => {
                     <div>{{selectedCluster.properties['clusterSize']}}</div>
                     <div class="text-gray-400"> Bridge Count </div>
                 </div>
-                <div>
-                    <div>{{selectedCluster.properties['bridges']}}</div>
-                    <div class="text-gray-400"> Bridges</div>
-                </div>
-
             </div>
 
             <span>
-                    <button v-if="checkSaved(selectedCluster.properties)" class="bg-green-500 mx-2 p-2 text-xs rounded-md">
-                        <span @click="triggerModalOpen(selectedCluster.id)">View Details</span>
+                    <button class="bg-orange-500 mx-2 p-2 text-xs rounded-md">
+                        <span @click="splitCluster(selectedCluster.properties['bridge_names'])">Split</span>
                     </button>
-                    <button v-if="checkSaved(selectedCluster.properties)" class="bg-red-500 mx-2 p-2 text-xs rounded-md">
-                        <span @click="deleteCluster(selectedCluster.id)">Delete Cluster</span>
+                    <button class="bg-red-500 mx-2 p-2 text-xs rounded-md">
+                        <span @click="deleteCluster(selectedCluster.id)">Delete</span>
+                    </button>
+                    <button class="bg-green-500 mx-2 p-2 text-xs rounded-md">
+                        <span @click="selectedCluster = null">Close</span>
                     </button>
             </span>
 

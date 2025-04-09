@@ -1,31 +1,31 @@
 <template>
 
-    <div class="navbar bg-base-100 shadow-sm">
-        <div class="flex-1 gap-2">
-          <a class="bg-ghost text-xl">Bridge Collection Clusters</a>
+    <div class="map-menu">
+        <ul class="menu bg-base-200 rounded-box gap-2 w-48">
+            <li><button class="btn btn-primary btn-xs" @click="resetSelectedPlan"> Macroplans </button></li>
+            <li><h2>{{ mapStore.selectedPlan ? mapStore.selectedPlan.id + "-" + mapStore.selectedPlan.name : "Select A Plan" }}</h2></li>
+            <li><button class="btn btn-primary btn-xs" @click="mapStore.isVisible = !mapStore.isVisible"> Bridge Selection Tool </button></li>
+            <li><button :class="['btn', mapStore.selectedBridges.length>0 && mapStore.selectedPlan ? 'btn-error' : 'btn-disabled','btn-xs']" @click="createPlanClusters"> Create Plan Clusters </button></li>
+            <li><button :class="['btn', mapStore.planClusterRows.length>0 ? 'btn-secondary' : 'btn-disabled','btn-xs']" @click="mapStore.showClusterTable=!mapStore.showClusterTable"> Cluster Table View </button></li>
+            
+            <div class="dropdown dropdown-right dropdown-end">
+                <div tabindex="0" role="button" class="btn m-1">Map Layers ➡️</div>
+                <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
+                <li><button :class="['btn', mapStore.showMeasure ? 'btn-warning' : 'btn-error','btn-xs']" @click="mapStore.showMeasure = !mapStore.showMeasure"> <span v-show="!mapStore.showMeasure">Show</span> <span v-show="mapStore.showMeasure">Hide</span> Measure Tool </button></li>
+                <li><button :class="['btn', showSchedule ? 'btn-warning' : 'btn-success','btn-xs']" @click="showSchedule = !showSchedule"> <span v-show="!showSchedule">Show</span> <span v-show="showSchedule">Hide</span> Esimator </button></li>
+                <li><button :class="['btn', mapStore.showBridges ? 'btn-warning' : 'btn-success','btn-xs']" @click="mapStore.showBridges = !mapStore.showBridges"> <span v-show="!mapStore.showBridges">Show</span> <span v-show="mapStore.showBridges">Hide</span> Bridges </button></li>
+                <li><button :class="['btn', mapStore.showClusters ? 'btn-warning' : 'btn-success','btn-xs']" @click="mapStore.showClusters = !mapStore.showClusters"> <span v-show="!mapStore.showClusters">Show</span> <span v-show="mapStore.showClusters">Hide</span> Clusters </button></li>
+                <li><button :class="['btn', mapStore.showCounties ? 'btn-warning' : 'btn-success','btn-xs']" @click="mapStore.showCounties = !mapStore.showCounties"> <span v-show="!mapStore.showCounties">Show</span> <span v-show="mapStore.showCounties">Hide</span> Counties </button></li>
+                <li><button class="btn btn-warn btn-xs" @click="clearAllLayers(clear_draw=true)"> Clear Map </button></li>
+            </ul>
+            </div>
 
-          <button class="btn btn-primary btn-xs"@click="mapStore.isVisible = !mapStore.isVisible"> Bridge Selection Tool </button>
-          
-          <button class="btn btn-neutral btn-xs"@click="resetView(planBBOX)"> Zoom to Region </button>
+        </ul>
 
+    </div>
 
-        </div>
-        <div class="flex gap-2">
-
-          <button :class="['btn', mapStore.showMeasure ? 'btn-warning' : 'btn-error','btn-xs']" @click="mapStore.showMeasure = !mapStore.showMeasure"> <span v-show="!mapStore.showMeasure">Show</span> <span v-show="mapStore.showMeasure">Hide</span> Measure Tool </button>
-
-          <button :class="['btn', showSchedule ? 'btn-warning' : 'btn-success','btn-xs']" @click="showSchedule = !showSchedule"> <span v-show="!showSchedule">Show</span> <span v-show="showSchedule">Hide</span> Esimator </button>
-          
-          <button :class="['btn', mapStore.showBridges ? 'btn-warning' : 'btn-success','btn-xs']" @click="mapStore.showBridges = !mapStore.showBridges"> <span v-show="!mapStore.showBridges">Show</span> <span v-show="mapStore.showBridges">Hide</span> Bridges </button>
-
-          <button :class="['btn', mapStore.showClusters ? 'btn-warning' : 'btn-success','btn-xs']" @click="mapStore.showClusters = !mapStore.showClusters"> <span v-show="!mapStore.showClusters">Show</span> <span v-show="mapStore.showClusters">Hide</span> Clusters </button>
-        
-          <button :class="['btn', mapStore.showCounties ? 'btn-warning' : 'btn-success','btn-xs']" @click="mapStore.showCounties = !mapStore.showCounties"> <span v-show="!mapStore.showCounties">Show</span> <span v-show="mapStore.showCounties">Hide</span> Counties </button>
-
-          <button class="btn btn-warn btn-xs" @click="clearAllLayers(clear_draw=true)"> Clear Map </button>
-
-        </div>
-
+    <div class="map-left-sidebar">
+          <slot name="left-sidebar"></slot>
     </div>
 
     <div class="map-right-sidebar">
@@ -34,7 +34,7 @@
       
       <div class="divider"></div>
 
-        <div class="flex w-full flex-col" v-show="!mapStore.isVisible && showSchedule">
+        <div class="flex w-full flex-col" v-show="!mapStore.isVisible && !mapStore.showPlans && !mapStore.showClusterTable && showSchedule">
           
           
 
@@ -155,9 +155,6 @@
       <div ref="map_el" class="map"></div>
 
       
-      
-
-      <div ref="superblocksWrapper" class="sb-container" v-show="mapStore.isVisible"></div>
 
       <div class="calculation-box">
           <p>Area:</p>
@@ -174,11 +171,10 @@
   import { MapboxAddressAutofill, MapboxSearchBox, MapboxGeocoder, config } from '@mapbox/search-js-web'
 
   
+
   import MapboxDraw from "@mapbox/mapbox-gl-draw";  
 
   mapboxgl.accessToken = 'pk.eyJ1IjoiY21lcnJpZ2FuIiwiYSI6ImNtNjlrNHJoNjBneDkybG4zaW5mZnE1OHoifQ.6K-waLtuExh_XFxgOD-E1w';
-
-  import { createSuperblocksEmbed } from '@superblocksteam/embed';
 
   import { getValidCollectionDays,computeDays,calculatePlanCost } from "@/utils/scheduleutils";
 
@@ -188,11 +184,8 @@
   import * as turf from "@turf/turf";
 
   import { useMapStore } from "@/stores/mapstore";
-  
-  const superblocksWrapper = ref(null)
 
   const map_el = ref(null);
-  const map_instance = ref(null);
 
   const mapStore = useMapStore();
 
@@ -208,6 +201,8 @@
   const cluster_bbox = ref([])
 
   const drawPolygon = ref(2);
+
+  const createDisabled = ref(false);
 
  
 
@@ -231,13 +226,35 @@
     option.selected = !option.selected;
   };
 
+  const resetSelectedPlan = () => {
+    mapStore.showPlans = !mapStore.showPlans;
+    mapStore.selectedPlan = null;
+  }
+
+  async function createPlanClusters(){
+
+    const plan_id = mapStore.selectedPlan.id;
+
+    const cluster_params = {
+      bridge_names: selectedBridgeNames.value,
+      mode: 2,   // 0 dist based, 1 kmeans, 2 time based
+      dist: 1200,
+      saveClusters: true
+    }
+
+    await mapStore.createPlanClusters(plan_id,cluster_params);
+
+    refreshBridges()
+
+  }
+
+  
+
   const selectedOptions = computed(() => {
-    console.log('Updating selected options')
     return options.value.filter((opt) => opt.selected).map((opt) => opt.name).join(", ") || "Select options";
   });
 
   const selectedOptionsIds = computed(() => {
-    console.log('Updating selected options IDS')
     return options.value.filter((opt) => opt.selected).map((opt) => opt.id);
   });
 
@@ -250,9 +267,6 @@
 
   const allValidDates = ref([]); // Array to store all valid collection days
   const allScheduleDates = ref([]); // Array to store hypothetical date/system pairs
-  
-  const numClusters = ref(0); // Number of clusters
-  const numBridges = ref(0); // Number of bridges
 
   const collectEfficiency = ref(0.5); // Efficiency of collection
 
@@ -269,12 +283,9 @@
 
   const maxMonths = ref(36);
 
-  
-
-
   onMounted(() => {
     
-    map_instance.value = new mapboxgl.Map({
+    mapStore.mapbox_instance = new mapboxgl.Map({
       container: map_el.value,
       style: 'mapbox://styles/mapbox/satellite-streets-v12', // Use your desired Mapbox style
       center: mapStore.mapCenter, 
@@ -287,7 +298,7 @@
     searchBoxElement.mapboxgl = mapboxgl
 
     // bind the search box instance to the map instance
-    searchBoxElement.bindMap(map_instance.value)
+    searchBoxElement.bindMap(mapStore.mapbox_instance)
     search_container_el.value.appendChild(searchBoxElement);
 
 
@@ -302,25 +313,24 @@
           // The user does not have to click the polygon control button first.
           defaultMode: 'draw_polygon'
     });
-    map_instance.value.addControl(draw_instance.value);
+    mapStore.mapbox_instance.addControl(draw_instance.value);
 
-    mapStore.mapbox_instance = map_instance;
     mapStore.mapboxdraw_instance = draw_instance;
 
     // ON LOAD
     mapStore.mapbox_instance.on("load",() => {
       mapStore.map_mounted = true;
 
-      map_instance.value.addSource("counties", {
+      mapStore.mapbox_instance.addSource("counties", {
         type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
         data: 'https://decker-public-hosting.s3.us-east-2.amazonaws.com/georef-united-states-of-america-county.geojson'
       });
 
-      map_instance.value.on('draw.create', updateArea);
-      map_instance.value.on('draw.delete', updateArea);
-      map_instance.value.on('draw.update', updateArea);
+      mapStore.mapbox_instance.on('draw.create', updateArea);
+      mapStore.mapbox_instance.on('draw.delete', updateArea);
+      mapStore.mapbox_instance.on('draw.update', updateArea);
 
-      map_instance.value.on('click', 'counties', (e) => {
+      mapStore.mapbox_instance.on('click', 'counties', (e) => {
             
             draw_instance.value.deleteAll()
 
@@ -339,36 +349,18 @@
             new mapboxgl.Popup()
                 .setLngLat(e.lngLat)
                 .setHTML(msg)
-                .addTo(map_instance.value);
+                .addTo(mapStore.mapbox_instance);
         });
 
     })
 
     // register move and zoom events to persist map viewport
-    map_instance.value.on('move', (e) => {
-      storeViewport(map_instance.value.getCenter(), map_instance.value.getZoom())
+    mapStore.mapbox_instance.on('move', (e) => {
+      storeViewport(mapStore.mapbox_instance.getCenter(), mapStore.mapbox_instance.getZoom())
     })
 
-    
-
-    
-
-  mapStore.sbAPP = createSuperblocksEmbed({
-        src: "https://app.superblocks.com/embed/applications/7472fe5c-cb1c-41c4-8026-bca71ddf467a",
-        colorScheme: "dark",
-        id: "sb-embed",
-        onEvent: handleEvent,
-        // No properties defined. Use the Embed panel to add properties and uncomment this block.
-        properties: { EmbedGeoPolygon: drawPolygon.value }
-    });
-    
-  superblocksWrapper.value.appendChild(mapStore.sbAPP);
 
   });
-
-  watch(drawPolygon,(newValue,oldValue)=>{
-    mapStore.sbAPP.properties = {EmbedGeoPolygon:newValue}
-  })
 
   //planArray = [totalPlanDays,planEndDate,tooManyClusters,allScheduleDates]
   const planArray = computed(() => {
@@ -385,14 +377,44 @@
     return calculatePlanCost(planArray.value[0], laborHourlyCost.value, numClusters.value, systemMonthlyCost.value, numberSystems.value, systemBaseCost.value, numBridges.value)
   })
 
-  
+  const selectedBridgeNames = computed(() => {
+    return mapStore.selectedBridges.map((bridge) => bridge.bridge_name)
+  })
+
+  watch(selectedBridgeNames, (newValue, oldValue) => {
+    // updates bridge layer so selected bridges are in red
+    refreshBridges(newValue)
+  })
+
+  const numClusters = computed(
+    () => mapStore.planClustersPayload.features ? mapStore.planClustersPayload.features.length : 0
+  )
+
+  const numBridges = computed(
+    () => {
+
+      let bridge_count = 0;
+
+      if (!mapStore.planClustersPayload.features){
+        return bridge_count
+      }
+
+      //loop clusters to count all bridges
+      mapStore.planClustersPayload.features.forEach((cluster) => {
+        bridge_count += cluster.properties.bridge_names.length
+      })
+
+      return bridge_count
+
+    }
+  )
 
   onUnmounted(() => {
     mapStore.map_mounted = false;
 
   });
 
-  function updateArea(e) {
+  async function updateArea(e) {
         const data = draw_instance.value.getAll();
         
         if (data.features.length > 0) {
@@ -400,7 +422,11 @@
 
             bbox.value = turf.bbox(data)
 
-            drawPolygon.value = data.features[0].geometry
+            mapStore.drawPolygon = data.features[0].geometry
+
+            await mapStore.fetchBridges(mapStore.drawPolygon);
+
+            refreshBridges()
 
             // Restrict the area to 2 decimal points.
             mapStore.calcArea = Math.round(area * 100) / 100;
@@ -418,7 +444,7 @@
 
   // Function to zoom to coordinates
   function zoomToCoordinates(lng, lat, zoomLevel=15) {
-    map_instance.value.flyTo({
+    mapStore.mapbox_instance.flyTo({
       center: [lng, lat],
       zoom: zoomLevel
     });
@@ -428,65 +454,28 @@
 
     mapStore.isVisible = false;
 
-    map_instance.value.fitBounds(view_bbox)
+    mapStore.mapbox_instance.fitBounds(view_bbox)
   }
 
   const handleEvent = (eventName, payload) => {
 
     switch(eventName){
 
-      case "bridgesReturned":
-
-        clearLayer("bridges")
-
-        map_instance.value.addSource("bridges", {
-        type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
-        data: payload.bridges
-
-            });
-
-        map_instance.value.addLayer({
-                id: "bridges",
-                type: 'circle',
-                source: "bridges",
-                paint: {
-                    'circle-color' : [
-                      'case',
-                      ['==', ['get', 'inCluster'], false], '#FFFF00',
-                      '#00FF00'
-                    ],
-                    'circle-radius': [
-                      'case',
-                      ['==', ['get', 'inCluster'], false], 4,
-                      6
-                    ],
-                    'circle-stroke-color':"#000000",
-                    'circle-stroke-width':1
-                }
-          });
-
-        break;
       case "clustersReturned":
         
         clearLayer("clusters")
 
-        numClusters.value = payload.clusters.features.length
-
-        let bridge_count = 0;
-        //loop clusters to count all bridges
-        payload.clusters.features.forEach((cluster) => {
-          bridge_count += cluster.properties.bridges.length
-        })
         
-        numBridges.value = bridge_count;
 
-        map_instance.value.addSource("clusters", {
+        
+
+        mapStore.mapbox_instance.addSource("clusters", {
         type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
         data: payload.clusters
 
             });
 
-        map_instance.value.addLayer({
+        mapStore.mapbox_instance.addLayer({
                 id: "clusters",
                 type: 'fill',
                 source: "clusters",
@@ -507,13 +496,13 @@
         //add layer for the polygon of current macro plan
         clearLayer("plan")
 
-        map_instance.value.addSource("plan", {
+        mapStore.mapbox_instance.addSource("plan", {
         type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
         data: payload.plan
 
             });
 
-        map_instance.value.addLayer({
+        mapStore.mapbox_instance.addLayer({
             id: "plan",
             type: 'fill',
             source: "plan",
@@ -548,13 +537,85 @@
   }
 
   const clearLayer = (tag) => {
-    if (map_instance.value.getLayer(tag)) {
-      map_instance.value.removeLayer(tag);
+    if (mapStore.mapbox_instance.getLayer(tag)) {
+      mapStore.mapbox_instance.removeLayer(tag);
     }
 
-    if (map_instance.value.getSource(tag)) {
-      map_instance.value.removeSource(tag);
+    if (mapStore.mapbox_instance.getSource(tag)) {
+      mapStore.mapbox_instance.removeSource(tag);
     }
+  }
+
+  const refreshBridges = (names=[]) => {
+      clearLayer("bridges")
+
+      mapStore.mapbox_instance.addSource("bridges", {
+      type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
+      data: mapStore.bridgePayload
+
+          });
+
+      if (names.length > 0){
+
+        mapStore.mapbox_instance.addLayer({
+                id: "bridges",
+                type: 'circle',
+                source: "bridges",
+                paint: {
+                    'circle-color' : [
+                      'case',
+                      ['in', ['get', 'bridge_name'], ['literal', names]], '#FF0000',
+                      '#FFFF00'
+                    ],
+                    'circle-radius': 4,
+                    'circle-stroke-color':"#000000",
+                    'circle-stroke-width':1
+                }
+          });         
+      } else {
+
+        mapStore.mapbox_instance.addLayer({
+                id: "bridges",
+                type: 'circle',
+                source: "bridges",
+                paint: {
+                    'circle-color' : '#FFFF00',
+                    'circle-radius': 4,
+                    'circle-stroke-color':"#000000",
+                    'circle-stroke-width':1
+                }
+          });
+      }
+
+
+      if(mapStore.planClustersPayload){
+
+        clearLayer("clusters")
+
+        mapStore.mapbox_instance.addSource("clusters", {
+        type: 'geojson', // Type of source (e.g., geojson, vector, raster, etc.)
+        data: mapStore.planClustersPayload
+
+            });
+
+        mapStore.mapbox_instance.addLayer({
+                id: "clusters",
+                type: 'fill',
+                source: "clusters",
+                paint: {
+                    'fill-color' : [
+                      'case',
+                      ['==', ['get', 'saved'], true], '#FF0000',
+                      '#FFFF00'
+                    ],
+                    'fill-opacity': 0.5,
+                    'fill-outline-color': "#000000"
+                }
+          });
+
+      }
+
+
   }
 
   const clearAllLayers = (clear_draw=false) => {
@@ -588,14 +649,22 @@
     height: 100vh;
 }
 
-.sb-container {
+.map-menu {
   position: absolute;
-  bottom: 12px;
-  left: 15px;
-  width: 98%;
-  height: 90%;
-  background: #000;
-  color: #FFF;
+  bottom: 40px;
+  left: 10px;
+  width: 100%;
+  max-width: 800px;
+  z-index: 200;
+}
+
+.map-left-sidebar {
+  position: absolute;
+  top: 140px;
+  left: 10px;
+  width: 100%;
+  max-width: 1800px;
+  z-index: 200;
 }
 
 .map-right-sidebar {
